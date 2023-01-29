@@ -1,20 +1,23 @@
 import Dependencies.{Version => CommonVersion}
+import WebDependencies.Version
 import sbt._
 
 object WebDependencies {
   val production: Seq[ModuleID] = Seq(
-    // J S O N  L I B S
-    "io.circe" %% "circe-optics" % CommonVersion.circe,
-    "org.json4s" %% "json4s-native" % CommonVersion.json4s,
 
     // T A P I R
-    "com.softwaremill.sttp.tapir" %% "tapir-core" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-sttp-client" % CommonVersion.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-core" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-sttp-client" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % Version.tapir,
+
+    // J S O N  L I B S
+    "io.circe" %% "circe-optics" % CommonVersion.circe,
+    "io.circe" %% "circe-generic-extras" % CommonVersion.circe,
+    "io.circe" %% "circe-shapes" % CommonVersion.circe,
 
     // A K K A
   "com.typesafe.akka" %% "akka-http" % CommonVersion.akkaHttp,
@@ -25,4 +28,8 @@ object WebDependencies {
   exclude("com.typesafe", "config")
   exclude("com.typesafe.akka", "akka-actor")
   )
+
+  object Version {
+    val tapir = "0.12.21"
+  }
 }

@@ -1,4 +1,8 @@
-ThisBuild / scalaVersion := "2.12.10"
+//Modificada para que cuadre con la aplicación web pero es una versión mayor a la que teniamos para la prueba de spark
+//Ver si funciona o hay que modificar
+//con las dependecias del sub projecto de spark podemos hacer lo mismo que con las web
+ThisBuild / scalaVersion := "2.13.4"
+
 val sparkVersion = "3.2.3"
 val vegasVersion = "0.3.11"
 val postgresVersion = "42.5.1"

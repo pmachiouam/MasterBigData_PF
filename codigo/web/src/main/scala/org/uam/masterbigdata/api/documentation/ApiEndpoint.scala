@@ -1,35 +1,32 @@
 package org.uam.masterbigdata.api.documentation
 
-import io.circe.generic.auto._
-import org.uam.masterbigdata.api.ApiModel.{BadRequestError, NotFoundError, OutputError, ServerError}
-import sttp.model.StatusCode
-import sttp.tapir.EndpointOutput.StatusMapping
-import sttp.tapir.generic.auto._
-import sttp.tapir.json.circe.jsonBody
 import sttp.tapir.{Endpoint, EndpointInput, _}
 
-import scala.concurrent.Future
 trait ApiEndpoint {
-  type EndpointResponse[T] = Future[Either[OutputError, T]]
 
-  private[api] lazy val apiResourceName: String = "api"
-  private[api] lazy val apiVersionName: String = "v1.0"
-  private[api] lazy val apiNameResourceName: String = "api-resource"
-  private[api] lazy val apiDescriptionResourceName: String = "Api Resources"
+  private[api] lazy val apiResource: String = "api"
+  private[api] lazy val apiVersion: String = "v1.0"
+  private[api] lazy val apiNameResource: String = "api-resource"
+  private[api] lazy val apiDescriptionResource: String = "Api Resources"
+  private[api] lazy val baseApiResource: EndpointInput[Unit] = apiResource / apiVersion
 
-  private[api] lazy val baseApiResource: EndpointInput[Unit] = apiResourceName / apiVersionName
+  //urls para los modelos (Se llaman desde sus respectivas apis)
+  private[api] lazy val journeysResourceName = "journeys"
+  private[api] lazy val framesResourceName = "frames"
+  private[api] lazy val eventsResourceName = "events"
+
+  private[api] lazy val objectIdPath = path[Long]("objectId")
+  private[api] lazy val journeysResource: EndpointInput[Unit] = journeysResourceName
+  private[api] lazy val framesResource: EndpointInput[Long] = framesResourceName / objectIdPath
+  private[api] lazy val eventsResource: EndpointInput[Long] = eventsResourceName / objectIdPath
+
 
   // E N D P O I N T
-  private[api] lazy val baseEndpoint: Endpoint[Unit, Unit, Unit, Any] =
+  private[api] lazy val baseEndpoint: Endpoint[Unit, Unit, Unit, Nothing] =
     endpoint
       .in(baseApiResource)
-      .name(apiNameResourceName)
-      .description(apiDescriptionResourceName)
-
-  /* Error mapping */
-  val breMapping: StatusMapping[BadRequestError] = statusMapping(StatusCode.BadRequest, jsonBody[BadRequestError])
-  val nfeMapping: StatusMapping[NotFoundError] = statusMapping(StatusCode.NotFound, jsonBody[NotFoundError])
-  val iseMapping: StatusMapping[ServerError] = statusMapping(StatusCode.InternalServerError, jsonBody[ServerError])
+      .name(apiNameResource)
+      .description(apiDescriptionResource)
 
 }
 

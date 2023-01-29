@@ -1,9 +1,12 @@
 package org.uam.masterbigdata.api
 
+import org.uam.masterbigdata.api.documentation.ActuatorEndpoint
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.DebuggingDirectives
-import org.uam.masterbigdata.api.documentation.ActuatorEndpoint
-import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
+import org.uam.masterbigdata.api.Converters.buildInfoToApi
+import sttp.tapir.server.akkahttp._
+
+import scala.concurrent.Future
 
 /**
  * Actuator endpoint for monitoring application
@@ -12,10 +15,10 @@ import sttp.tapir.server.akkahttp.AkkaHttpServerInterpreter
 trait ActuatorApi {
 
   // https://doc.akka.io/docs/akka-http/current/routing-dsl/directives/debugging-directives/logRequestResult.html
-  lazy val route: Route = DebuggingDirectives.logRequestResult("api-logger") {
-    AkkaHttpServerInterpreter.toRoute(ActuatorEndpoint.healthEndpoint)(_ =>
-      Converters.asRightFuture(Converters.buildInfoToApi())
-    )
+  val route: Route = DebuggingDirectives.logRequestResult("actuator-logger") {
+    ActuatorEndpoint.healthEndpoint.toRoute { _ =>
+      Future.successful(Right(buildInfoToApi()))
+    }
   }
 
 }
