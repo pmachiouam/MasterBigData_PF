@@ -20,7 +20,7 @@ trait SwaggerApi {
     // J O U R N E Y S
     JourneysEndpoint.getJourneyByIdEndpoint,
     JourneysEndpoint.getJourneysByLabelEndpoint,
-    JourneysEndpoint.getJourneysEndpoint
+ //   JourneysEndpoint.getJourneysEndpoint
   )
 
   private lazy val docsAsYaml: String =

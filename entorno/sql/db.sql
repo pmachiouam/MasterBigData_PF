@@ -18,7 +18,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --Setup database
-DROP DATABASE IF EXISTS rtjvm;
+DROP DATABASE IF EXISTS tracking;
 CREATE DATABASE tracking;
 \c tracking;
 
@@ -34,7 +34,8 @@ CREATE TABLE public.journeys (
     end_location_address text NULL,
     end_location_latitude float NULL,
     end_location_longitude float NULL,
-    distance int8 NULL
+    distance int8 NULL,
+	label text NULL
 );  
 comment on column journeys.id is 'Identificador del trayecto'; 
 comment on column journeys.device_id is 'Identificador del dispositivo que realiza el trayecto';

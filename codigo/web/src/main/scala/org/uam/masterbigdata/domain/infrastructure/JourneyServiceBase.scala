@@ -1,23 +1,20 @@
 package org.uam.masterbigdata.domain.infrastructure
 
-import org.uam.masterbigdata.domain.AdapterModel
-import org.uam.masterbigdata.domain.AdapterModel.JourneyView
-import org.uam.masterbigdata.domain.model.error.DomainError
+import org.uam.masterbigdata.domain.model.Entities.Journey
 import org.uam.masterbigdata.domain.service.JourneysService
 
 import scala.concurrent.Future
 
 
-class JourneyServiceBase extends JourneysService{
-  override def getJourney(id: Long): Future[Either[DomainError, JourneyView]] = Future.successful(Right(JourneyView("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K")))
+class JourneyServiceBase(modelService: ModelService[Future]) extends JourneysService{
+  override def getJourney(id: Long): Future[Journey] = modelService.findJourneyById(id)
 
-  override def getJourney(label: String): Future[Either[DomainError, Seq[JourneyView]]] = Future.successful(Right(Seq(JourneyView("AA", "BB", "C", "D", "E", "F", "G", "H", "I", "J", "K"))))
+  override def getJourney(label: String): Future[Seq[Journey]] = modelService.findJourneysByLabel(label)
 
-
-  override def getAllJourneys(): Future[Either[DomainError, Seq[JourneyView]]] = Future.successful(Right(Seq(JourneyView("AAA", "BBB", "C", "D", "E", "F", "G", "H", "I", "J", "K"))))
+  override def getAllJourneys(): Future[Seq[Journey]]= modelService.findAllJourneys()
 
 }
 
 object JourneyServiceBase{
-  def apply() = new JourneyServiceBase
+  def apply(modelService: ModelService[Future]) = new JourneyServiceBase(modelService)
 }

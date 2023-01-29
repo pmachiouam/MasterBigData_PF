@@ -29,16 +29,18 @@ trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
       .in(journeyByNameResource)
       .out(jsonBody[Seq[JourneyView]])
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
-
-  lazy val getJourneysEndpoint: Endpoint[Unit, DomainError, Seq[JourneyView], Nothing] =
+/*
+  private[api] lazy val journeysHowManyQuery = query[Option[Int]]("howMany")
+  private[api] lazy val journeysHowManyQueryResource:EndpointInput[Option[Int]] =journeysResource / journeysHowManyQuery
+  lazy val getJourneysEndpoint: Endpoint[Option[Int], DomainError, Seq[JourneyView], Nothing] =
     baseEndpoint
       .get
       .name("GetAllJourneys")
       .description("Recupera todos los trayectos")
-      .in(journeysResource)
+      .in(journeysHowManyQueryResource)
       .out(jsonBody[Seq[JourneyView]])
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
-
+*/
 
 }
 

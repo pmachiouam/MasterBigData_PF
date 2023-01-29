@@ -26,10 +26,20 @@ object WebDependencies {
   "com.typesafe.akka" %% "akka-stream" % CommonVersion.akka,
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % CommonVersion.akkaSlick
   exclude("com.typesafe", "config")
-  exclude("com.typesafe.akka", "akka-actor")
+  exclude("com.typesafe.akka", "akka-actor"),
+
+    // P O S T G R E S
+    "org.postgresql" % "postgresql" % CommonVersion.postgres,
+    "com.github.tminglei" %% "slick-pg" % CommonVersion.slick_pg,
+    "com.github.tminglei" %% "slick-pg_circe-json" % CommonVersion.slick_pg,
+
+    // L O G B A C K
+    "net.logstash.logback" % "logstash-logback-encoder" % Version.encoder,
   )
+
 
   object Version {
     val tapir = "0.12.21"
+    val encoder = "6.3"
   }
 }
