@@ -8,7 +8,7 @@ import scala.concurrent.Future
  * * @tparam F type constructor
  * */
 trait ModelService[F[_]] {
-  def findAllJourneys():Future[Seq[Journey]]
-  def findJourneysByLabel(label:String):Future[Seq[Journey]]
-  def findJourneyById(id:Long):Future[Journey]
+  def findAllJourneys(deviceId:Long):Future[Seq[Journey]]
+  def findJourneysByLabel(deviceId:Long,label:String):Future[Seq[Journey]]
+  def findJourneyById(deviceId:Long,id:String):Future[Journey]
 }

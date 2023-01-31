@@ -1,9 +1,16 @@
 package org.uam.masterbigdata.api.documentation
 
+import org.uam.masterbigdata.domain.model.Entities.{JourneyByDeviceIdRequest, JourneysByDeviceIdAndLabelRequest, JourneysByDeviceIdRequest}
+
 trait ApiMapper {
-  private[api] lazy val mapToId: Long => Long = id => id
+  private[api] lazy val mapToDeviceJourneyRequest: ((Long, String)) => JourneyByDeviceIdRequest =
+    request => JourneyByDeviceIdRequest(request._1, request._2)
 
-  private[api] lazy val mapToLabel: String => String = label => label
+  private[api] lazy val mapToDeviceJourneysByLabelRequest:  ((Long, String))  => JourneysByDeviceIdAndLabelRequest =
+    request => JourneysByDeviceIdAndLabelRequest( request._1, request._2)
 
-  private[api] lazy val mapToNothing: Unit => Unit = nothing => nothing
+
+  private[api] lazy val mapToDeviceJourneysRequest: Long => JourneysByDeviceIdRequest =
+    request => JourneysByDeviceIdRequest(request)
+
 }

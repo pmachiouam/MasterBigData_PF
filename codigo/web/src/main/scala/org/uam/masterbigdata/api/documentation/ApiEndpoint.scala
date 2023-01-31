@@ -15,10 +15,11 @@ trait ApiEndpoint {
   private[api] lazy val framesResourceName = "frames"
   private[api] lazy val eventsResourceName = "events"
 
-  private[api] lazy val objectIdPath = path[Long]("objectId")
-  private[api] lazy val journeysResource: EndpointInput[Unit] = journeysResourceName
-  private[api] lazy val framesResource: EndpointInput[Long] = framesResourceName / objectIdPath
-  private[api] lazy val eventsResource: EndpointInput[Long] = eventsResourceName / objectIdPath
+  private[api] lazy val deviceIdPath = path[Long]("deviceId")
+  private[api] lazy val objectIdPath = path[String]("objectId")
+  private[api] lazy val journeysResource: EndpointInput[Long] = journeysResourceName / deviceIdPath
+  private[api] lazy val framesResource: EndpointInput[Long] = framesResourceName / deviceIdPath
+  private[api] lazy val eventsResource: EndpointInput[Long] = eventsResourceName / deviceIdPath
 
 
   // E N D P O I N T

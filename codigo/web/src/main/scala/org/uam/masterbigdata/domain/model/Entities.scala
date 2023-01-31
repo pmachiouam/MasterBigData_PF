@@ -14,4 +14,7 @@ object Entities {
                           , end_location_longitude: String
                           , distance: String
                         )
+  case class JourneysByDeviceIdRequest(deviceId:Long)
+  case class JourneysByDeviceIdAndLabelRequest(deviceId:Long, label:String)
+  case class JourneyByDeviceIdRequest(deviceId:Long, journeyId:String)
 }

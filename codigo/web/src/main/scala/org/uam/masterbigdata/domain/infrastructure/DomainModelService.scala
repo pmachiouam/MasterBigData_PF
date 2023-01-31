@@ -11,26 +11,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 final  class DomainModelService(dal: DataAccessLayer) extends ModelService[Future] with ComponentLogging {
   import dal.executeOperation
 
-  override def findAllJourneys(): Future[Seq[Journey]] = {
-    log.info("Buscando todos los trayectos")
+  override def findAllJourneys(deviceId: Long): Future[Seq[Journey]] = {
+    log.info("Buscando todos los trayectos del device $deviceId")
     for {
-      dbo <- dal.journeysRepository.find()
+      dbo <- dal.journeysRepository.find(deviceId)
     } yield dbo.map(dboToModel)
   }
 
 
-  override def findJourneysByLabel(label: String): Future[Seq[Journey]] = {
-    log.info(s"Buscando todos los trayectos por label $label")
+  override def findJourneysByLabel(deviceId: Long,label: String): Future[Seq[Journey]] = {
+    log.info(s"Buscando todos los trayectos por label $label del device $deviceId")
     for {
-
-      dbo <- dal.journeysRepository.find(label)
+      dbo <- dal.journeysRepository.findByLabel(deviceId, label)
     } yield dbo.map(dboToModel)
   }
 
-  override def findJourneyById(id: Long): Future[Journey] = {
-    log.info(s"Buscando todos los trayectos por id $id")
+  override def findJourneyById(deviceId: Long, id:String): Future[Journey] = {
+    log.info(s"Buscando todos los trayectos por id $id del device $deviceId")
     for {
-      dbo <- dal.journeysRepository.find(id)
+      dbo <- dal.journeysRepository.findById(deviceId, id)
     } yield dboToModel(dbo)
   }
 

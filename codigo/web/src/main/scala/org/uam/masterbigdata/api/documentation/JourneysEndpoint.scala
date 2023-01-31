@@ -9,8 +9,9 @@ import sttp.tapir.{Endpoint, EndpointInput, _}
 
 trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
 
-  private lazy  val journeyByIdResource: EndpointInput[Long] = journeysResource / objectIdPath
-  lazy val getJourneyByIdEndpoint: Endpoint[Long, DomainError, JourneyView, Nothing] =
+
+  private lazy  val journeyByIdResource: EndpointInput[(Long, String)]= journeysResource / objectIdPath
+  lazy val getJourneyByIdEndpoint: Endpoint[(Long, String), DomainError, JourneyView, Nothing] =
     baseEndpoint
       .get
       .name("GetJourneyById")
@@ -20,8 +21,8 @@ trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
 
   private lazy val objectLabelPath = path[String]("label")
-  private lazy val journeyByNameResource: EndpointInput[String] = journeysResource / objectLabelPath
-  lazy val getJourneysByLabelEndpoint: Endpoint[String, DomainError, Seq[JourneyView], Nothing] =
+  private lazy val journeyByNameResource: EndpointInput[(Long, String)] = journeysResource / "label" / objectLabelPath
+  lazy val getJourneysByLabelEndpoint: Endpoint[(Long, String), DomainError, Seq[JourneyView], Nothing] =
     baseEndpoint
       .get
       .name("GetJourneyByLabel")
@@ -29,18 +30,16 @@ trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
       .in(journeyByNameResource)
       .out(jsonBody[Seq[JourneyView]])
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
-/*
-  private[api] lazy val journeysHowManyQuery = query[Option[Int]]("howMany")
-  private[api] lazy val journeysHowManyQueryResource:EndpointInput[Option[Int]] =journeysResource / journeysHowManyQuery
-  lazy val getJourneysEndpoint: Endpoint[Option[Int], DomainError, Seq[JourneyView], Nothing] =
+
+  lazy val getJourneysEndpoint: Endpoint[Long, DomainError, Seq[JourneyView], Nothing] =
     baseEndpoint
       .get
       .name("GetAllJourneys")
       .description("Recupera todos los trayectos")
-      .in(journeysHowManyQueryResource)
+      .in(journeysResource)
       .out(jsonBody[Seq[JourneyView]])
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
-*/
+
 
 }
 

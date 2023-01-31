@@ -4,7 +4,7 @@ cd codigo
 #estamos usando sbt 1.8.0 on java 11.0.2
 sbt batch/assembly
 #copiar archivo jar
-mv Batch_Layer/target/scala-2.12/Batch_Layer-assembly-0.1.0-SNAPSHOT.jar ../entorno/apps
+mv Batch_Layer/target/scala-2.13/Batch_Layer-assembly-0.1.0-SNAPSHOT.jar ../entorno/apps
 
 cd ..
 #arrancar docker compose

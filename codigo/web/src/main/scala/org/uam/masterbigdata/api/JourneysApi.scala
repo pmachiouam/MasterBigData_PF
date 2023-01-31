@@ -18,20 +18,20 @@ import scala.util.{Failure, Success}
 
 class JourneysApi(service:JourneysService) extends ApiMapper with ComponentLogging {
   import ApiHelpers._
-  lazy val routes: Route = getJourneyByIdRoute ~ getJourneyByLabelRoute //~ getAllJourneysRoute
+  lazy val routes: Route = getJourneyByIdRoute ~ getJourneyByLabelRoute ~ getAllJourneysRoute
 
   private lazy val getJourneyByIdRoute: Route = JourneysEndpoint.getJourneyByIdEndpoint.toRoute {
-    mapToId andThen service.getJourney andThen handleJourneyResult
+    mapToDeviceJourneyRequest andThen service.getDeviceJourney andThen handleJourneyResult
   }
 
   private lazy val getJourneyByLabelRoute: Route = JourneysEndpoint.getJourneysByLabelEndpoint.toRoute {
-    mapToLabel andThen service.getJourney andThen handleTagFeatureVersionResultSeq
+    mapToDeviceJourneysByLabelRequest andThen service.getAllDeviceJourneysByLabel andThen handleTagFeatureVersionResultSeq
   }
-/*
+
   private lazy val getAllJourneysRoute: Route = JourneysEndpoint.getJourneysEndpoint.toRoute {
-     service.getAllJourneys() andThen handleTagFeatureVersionResultSeq
+     mapToDeviceJourneysRequest andThen  service.getAllDeviceJourneys andThen handleTagFeatureVersionResultSeq
   }
-*/
+
   private lazy val handleJourneyResult: Future[Journey] => Future[Either[DomainError, JourneyView]] = future => future.transform {
     case Success(value) => makeSuccessResult(Converters.modelToApi(value))
     case Failure(exception) =>

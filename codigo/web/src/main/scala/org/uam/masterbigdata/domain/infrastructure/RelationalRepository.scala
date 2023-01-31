@@ -5,6 +5,7 @@ import org.uam.masterbigdata.domain.infrastructure.Profile
 import com.github.tminglei.slickpg.{LTree, TsVector}
 import org.uam.masterbigdata.ComponentLogging
 import org.uam.masterbigdata.domain.infrastructure.repository.JourneysRepository
+import slick.ast.ColumnOption
 import slick.ast.ColumnOption.PrimaryKey
 import slick.dbio
 import slick.lifted.ProvenShape
@@ -33,7 +34,7 @@ trait RelationalRepository extends ComponentLogging  {
   final class JourneyTable(tag: Tag)extends Table[JourneyDbo](tag, "journeys") {
     override def * : ProvenShape[JourneyDbo] = (id, device_id, start_timestamp, start_location_address
       , start_location_latitude,start_location_longitude, end_timestamp
-      , end_location_address, end_location_latitude, end_location_longitude, distance, label)<> (intoJourney, fromJourney)
+      , end_location_address, end_location_latitude, end_location_longitude, distance, label.getOrElse(""))<> (intoJourney, fromJourney)
     def id = column[String]("id", PrimaryKey)
     def device_id =column[ Long]("device_id")
     def start_timestamp=column[Timestamp]("start_timestamp")
@@ -45,17 +46,35 @@ trait RelationalRepository extends ComponentLogging  {
     def end_location_latitude=column[Float]("end_location_latitude")
     def end_location_longitude=column[Float]("end_location_longitude")
     def distance=column[Long]("distance")
-    def label=column[String]("label")
+    def label= column[Option[String]]("label")
+
   }
   final class JourneysRelationalRepository extends JourneysRepository {
     lazy val entities = journeyQueryTable
-    override def find(): dbio.DBIO[Seq[JourneyDbo]] = entities.result
+  /*  override def find(): dbio.DBIO[Seq[JourneyDbo]] = entities.result
 
-    override def find(name: String): dbio.DBIO[Seq[JourneyDbo]] = {
+    override def find(id: Long, name: String): dbio.DBIO[Seq[JourneyDbo]] = {
       val search = entities.filter(_.label === name)
       search.result
     }
 
     override def find(id: Long): dbio.DBIO[JourneyDbo] = ???
+
+   */
+
+    override def find(deviceId: Long): dbio.DBIO[Seq[JourneyDbo]] =
+      entities.filter(_.device_id === deviceId).result
+
+    override def findByLabel(deviceId: Long, label: String): dbio.DBIO[Seq[JourneyDbo]] =
+      entities.filter(_.device_id === deviceId).filter(_.label === label).result
+
+    override def findById(deviceId: Long, id: String): dbio.DBIO[JourneyDbo] = {
+      val search = entities.filter(_.device_id === deviceId).filter(_.id === id)
+      search.result.flatMap(xs => xs.length match {
+        case 0 => DBIO.failed(new RuntimeException(s"No existe el trayecto $id para el dispositivo $deviceId"))
+        case 1 => DBIO.successful(xs.head)
+        case _ => DBIO.failed(new RuntimeException(s"Existen múltiples trayectos para el $id y dispositivo $deviceId"))
+      })
+    }
   }
 }
