@@ -1,16 +1,11 @@
 package org.uam.masterbigdata.domain.infrastructure
 
-import org.uam.masterbigdata.domain.infrastructure.model.Entities.{EventDbo, JourneyDbo}
-import org.uam.masterbigdata.domain.infrastructure.Profile
-import com.github.tminglei.slickpg.{LTree, TsVector}
+import org.uam.masterbigdata.domain.infrastructure.model.Entities.{EventDbo, FrameDbo, JourneyDbo}
 import org.uam.masterbigdata.ComponentLogging
-import org.uam.masterbigdata.domain.infrastructure.repository.{JourneysRepository, EventsRepository}
-import slick.ast.ColumnOption
+import org.uam.masterbigdata.domain.infrastructure.repository.{EventsRepository, FramesRepository, JourneysRepository}
 import slick.ast.ColumnOption.PrimaryKey
 import slick.dbio
 import slick.lifted.ProvenShape
-import slick.relational._
-import slick.sql.SqlProfile.ColumnOption.SqlType
 
 import java.sql.Timestamp
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,6 +18,7 @@ trait RelationalRepository extends ComponentLogging  {
   /**Table*/
   private val journeyQueryTable = TableQuery[JourneyTable]
   private val eventQueryTable = TableQuery[EventTable]
+  private val frameQueryTable = TableQuery[FrameTable]
 
   /**
    * Journey
@@ -92,6 +88,7 @@ trait RelationalRepository extends ComponentLogging  {
 
   final class EventsRelationalRepository extends EventsRepository {
     lazy val entities = eventQueryTable
+
     override def find(deviceId: Long): dbio.DBIO[Seq[EventDbo]] =
       entities.filter(_.device_id === deviceId).result
 
@@ -104,4 +101,61 @@ trait RelationalRepository extends ComponentLogging  {
       })
     }
   }
+    /**
+     * Frames
+     * */
+    private def intoFrames(row: (Long, Long, Timestamp, Timestamp, Timestamp, String, Float, Float, Float, Float, Boolean, Float, Boolean)): FrameDbo =
+      FrameDbo(row._1, row._2, row._3.getTime, row._4.getTime, row._5.getTime, row._6, row._7, row._8, row._9, row._10, row._11, row._12, row._13)
+
+    private def fromFrames(frame: FrameDbo): Option[(Long, Long, Timestamp, Timestamp, Timestamp, String, Float, Float, Float, Float, Boolean, Float, Boolean)] =
+      Some((frame.id, frame.device_id, new Timestamp(frame.created), new Timestamp(frame.received), new Timestamp(frame.location_created)
+        , frame.location_address, frame.location_latitude, frame.location_longitude, frame.location_altitude, frame.location_speed
+        , frame.location_valid, frame.location_course, frame.ignition))
+    final class FrameTable(tag: Tag) extends Table[FrameDbo](tag, "frames") {
+      override def * : ProvenShape[FrameDbo] = (id, device_id, created, received, location_created, location_address
+        , location_latitude, location_longitude, location_altitude, location_speed, location_valid, location_course, ignition) <> (intoFrames, fromFrames)
+
+      def id = column[Long]("id")
+
+      def device_id = column[Long]("device_id")
+
+      def created = column[Timestamp]("created")
+
+      def received = column[Timestamp]("received")
+
+      def location_created = column[Timestamp]("location_created")
+
+      def location_address = column[String]("location_address")
+
+      def location_latitude = column[Float]("location_latitude")
+
+      def location_longitude = column[Float]("location_longitude")
+
+      def location_altitude = column[Float]("location_altitude")
+
+      def location_speed = column[Float]("location_speed")
+
+      def location_valid = column[Boolean]("location_valid")
+
+      def location_course = column[Float]("location_course")
+
+      def ignition = column[Boolean]("ignition")
+    }
+
+    final class FramesRelationalRepository extends FramesRepository {
+      lazy val entities = frameQueryTable
+
+      override def find(deviceId: Long): dbio.DBIO[Seq[FrameDbo]] =
+        entities.filter(_.device_id === deviceId).result
+
+      override def findById(deviceId: Long, id: Long): dbio.DBIO[FrameDbo] = {
+        val search = entities.filter(_.device_id === deviceId).filter(_.id === id)
+        search.result.flatMap(xs => xs.length match {
+          case 0 => DBIO.failed(new RuntimeException(s"No existe el frame $id para el dispositivo $deviceId"))
+          case 1 => DBIO.successful(xs.head)
+          case _ => DBIO.failed(new RuntimeException(s"Existen múltiples frames para el $id y dispositivo $deviceId"))
+        })
+      }
+    }
+
 }

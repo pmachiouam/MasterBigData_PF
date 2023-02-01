@@ -2,10 +2,8 @@ package org.uam.masterbigdata.api
 
 import org.uam.masterbigdata.api.ApiModel.BuildInfoDto
 import org.uam.masterbigdata.api.model.BuildInfo
-import org.uam.masterbigdata.domain.AdapterModel.{EventView, JourneyView, FrameView}
-import org.uam.masterbigdata.domain.model.Entities.{Event, Journey, Frame}
-
-import scala.concurrent.Future
+import org.uam.masterbigdata.domain.AdapterModel.{EventView, FrameView, JourneyView, LocationView}
+import org.uam.masterbigdata.domain.model.Entities.{Event, Frame, Journey}
 
 trait Converters {
   import Converters._
@@ -46,22 +44,28 @@ trait Converters {
     )
   }
 
-  /*
+
   def modelToApi(model: Frame): FrameView = {
-    EventView(
+    val locationView:LocationView = LocationView(
+      model.location_created
+      ,model.location_address
+      ,model.location_latitude
+      ,model.location_longitude
+      ,model.location_altitude
+      , model.location_speed
+      ,model.location_valid
+      ,model.location_course
+    )
+
+    FrameView(
       model.id
       , model.device_id
       , model.created
-      , model
-      , model.location_address
-      , model.location_latitude
-      , model.location_longitude
-      , model.value
+      , model.received
+      , locationView
+      ,model.ignition
     )
-  }    */
-
-  def asRightFuture[T](t: T): Future[Either[Nothing, T]] =
-    Future.successful(Right(t))
+  }
 }
 
 object Converters extends Converters {

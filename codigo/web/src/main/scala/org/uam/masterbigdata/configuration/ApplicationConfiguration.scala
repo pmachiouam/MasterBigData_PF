@@ -4,10 +4,10 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.Materializer
 import com.typesafe.config.{Config, ConfigFactory}
-import org.uam.masterbigdata.api.{ActuatorApi, JourneysApi, SwaggerApi, EventsApi}
-import org.uam.masterbigdata.domain.infrastructure.repository.EventsRepository
-import org.uam.masterbigdata.domain.infrastructure.{DataAccessLayer, DomainModelService, JourneyServiceBase, EventsServiceBase, RelationalRepository}
-import org.uam.masterbigdata.domain.service.{EventsService, JourneysService}
+import org.uam.masterbigdata.api.{ActuatorApi, EventsApi, FramesApi, JourneysApi, SwaggerApi}
+import org.uam.masterbigdata.domain.infrastructure.repository.{EventsRepository, FramesRepository}
+import org.uam.masterbigdata.domain.infrastructure.{DataAccessLayer, DomainModelService, EventsServiceBase, FramesServiceBase, JourneyServiceBase, RelationalRepository}
+import org.uam.masterbigdata.domain.service.{EventsService, FramesService, JourneysService}
 import slick.basic.DatabaseConfig
 import slick.jdbc.{JdbcBackend, JdbcProfile}
 
@@ -35,6 +35,7 @@ trait ApplicationConfiguration {
       override val profile: JdbcProfile = slick.jdbc.PostgresProfile
       override val journeysRepository = new JourneysRelationalRepository()
       override val eventsRepository: EventsRepository = new EventsRelationalRepository()
+      override val framesRepository: FramesRepository = new FramesRelationalRepository()
     }
   }
   val modeler = new DomainModelService(dataAccessLayer)
@@ -46,9 +47,12 @@ trait ApplicationConfiguration {
   //Events
   private val eventsService:EventsService = EventsServiceBase(modeler)
   private val eventsApi: EventsApi = EventsApi(eventsService)
+  //Frames
+  private val framesService: FramesService = FramesServiceBase(modeler)
+  private val framesApi: FramesApi = FramesApi(framesService)
 
 
   /**RUTAS WEB*/
   lazy val routes: Route =
-    ActuatorApi.route ~ SwaggerApi.route ~ journeysApi.routes ~ eventsApi.routes
+    ActuatorApi.route ~ SwaggerApi.route ~ journeysApi.routes ~ eventsApi.routes ~framesApi.routes
 }

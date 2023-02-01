@@ -158,6 +158,13 @@ trait JsonCodecs {
     )
   }
 
+  private[api] implicit lazy val seqFramesViewCodec: JsonCodec[Seq[FrameView]] =
+    implicitly[JsonCodec[Json]].map(json => json.as[Seq[FrameView]](io.circe.Decoder.decodeSeq[FrameView](decodeFrameView)) match {
+      case Left(_) =>
+        throw DomainException(MessageParsingError)
+      case Right(value) => value
+    })(assetShape => assetShape.asJson(io.circe.Encoder.encodeSeq[FrameView](encodeFrameView)))
+
 }
 
 object JsonCodecs extends JsonCodecs

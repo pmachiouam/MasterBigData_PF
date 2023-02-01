@@ -54,9 +54,17 @@ final  class DomainModelService(dal: DataAccessLayer) extends ModelService[Futur
     }yield dboToModel(dbo)
 
   //Frames
-  override def findAllFrames(deviceId: Long): Future[Seq[Frame]] = ???
+  private def dboToModel(dbo: FrameDbo): Frame =
+    Frame(dbo.id.toString, dbo.device_id.toString, dbo.created.toString, dbo.received.toString, dbo.location_created.toString
+    ,dbo.location_address, dbo.location_latitude.toString, dbo.location_longitude.toString, dbo.location_altitude.toString
+      , dbo.location_speed.toString, dbo.location_valid.toString, dbo.location_course.toString, dbo.ignition.toString)
+  override def findAllFrames(deviceId: Long): Future[Seq[Frame]] = for{
+    dbo <- dal.framesRepository.find(deviceId)
+  }yield dbo.map(dboToModel)
 
-  override def findFrameById(deviceId: Long, id: Long): Future[Frame] = ???
+  override def findFrameById(deviceId: Long, id: Long): Future[Frame] = for{
+    dbo <- dal.framesRepository.findById(deviceId, id)
+  }yield dboToModel(dbo)
 }
 
 object DomainModelService {

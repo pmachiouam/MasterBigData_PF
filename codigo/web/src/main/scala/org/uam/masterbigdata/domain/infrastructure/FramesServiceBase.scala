@@ -8,7 +8,7 @@ import scala.concurrent.Future
 class FramesServiceBase(model:ModelService[Future]) extends FramesService{
   override def getDeviceFrames(request: Entities.FramesByDeviceIdAndFrameIdRequest): Future[Entities.Frame] = model.findFrameById(request.deviceId, request.id)
 
-  override def getAllDeviceEvents(request: Entities.FramesByDeviceIdRequest): Future[Seq[Entities.Frame]] = model.findAllFrames(request.deviceId)
+  override def getAllDeviceFrames(request: Entities.FramesByDeviceIdRequest): Future[Seq[Entities.Frame]] = model.findAllFrames(request.deviceId)
 }
 
 object FramesServiceBase{

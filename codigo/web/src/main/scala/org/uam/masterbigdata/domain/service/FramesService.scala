@@ -6,7 +6,7 @@ import scala.concurrent.Future
 
 trait FramesService {
   def getDeviceFrames(request: FramesByDeviceIdAndFrameIdRequest): Future[Frame]
-  def getAllDeviceEvents(request: FramesByDeviceIdRequest): Future[Seq[Frame]]
+  def getAllDeviceFrames(request: FramesByDeviceIdRequest): Future[Seq[Frame]]
 }
 
 object FramesService
