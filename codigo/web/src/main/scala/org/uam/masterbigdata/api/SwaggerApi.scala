@@ -1,6 +1,6 @@
 package org.uam.masterbigdata.api
 
-import org.uam.masterbigdata.api.documentation.{ActuatorEndpoint, ApiEndpoint, JourneysEndpoint}
+import org.uam.masterbigdata.api.documentation.{ActuatorEndpoint, ApiEndpoint, JourneysEndpoint, EventsEndpoint}
 import org.uam.masterbigdata.api.model.BuildInfo
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
@@ -20,7 +20,10 @@ trait SwaggerApi {
     // J O U R N E Y S
     JourneysEndpoint.getJourneyByIdEndpoint,
     JourneysEndpoint.getJourneysByLabelEndpoint,
-    JourneysEndpoint.getJourneysEndpoint
+    JourneysEndpoint.getJourneysEndpoint,
+    // E V E N T S
+    EventsEndpoint.getEventByIdEndpoint,
+    EventsEndpoint.getEventsEndpoint
   )
 
   private lazy val docsAsYaml: String =

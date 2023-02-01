@@ -17,4 +17,40 @@ object Entities {
   case class JourneysByDeviceIdRequest(deviceId:Long)
   case class JourneysByDeviceIdAndLabelRequest(deviceId:Long, label:String)
   case class JourneyByDeviceIdRequest(deviceId:Long, journeyId:String)
+
+  //Events
+  case class Event(
+                    id: String
+                    , device_id: String
+                    , created: String
+                    , type_id: String
+                    , location_address: String
+                    , location_latitude: String
+                    , location_longitude: String
+                    , value: String
+                  )
+
+  case class EventsByDeviceIdRequest(deviceId: Long)
+
+  case class EventByDeviceIdAndEventIdRequest(deviceId: Long, id: Long)
+  //Frames
+  case class Frame(
+                      id: String
+                      , device_id: String
+                      , created: String
+                      , received: String
+                      , location_created: String
+                      , location_address: String
+                      , location_latitude: String
+                      , location_longitude: String
+                      , location_altitude: String
+                      , location_speed: String
+                      , location_valid: String
+                      , location_course: String
+                      , ignition: String
+                    )
+
+  case class FramesByDeviceIdRequest(deviceId: Long)
+
+  case class FramesByDeviceIdAndFrameIdRequest(deviceId: Long, id: Long)
 }

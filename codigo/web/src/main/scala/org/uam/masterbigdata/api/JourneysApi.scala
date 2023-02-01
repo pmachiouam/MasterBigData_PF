@@ -45,11 +45,13 @@ class JourneysApi(service:JourneysService) extends ApiMapper with ComponentLoggi
   private lazy val handleTagFeatureVersionResultSeq: Future[Seq[Journey]] => Future[Either[DomainError, Seq[JourneyView]]] = future => future.transform {
     case Success(value) => makeSuccessResult(value.map(Converters.modelToApi))
     case Failure(exception) =>
+      log.error(exception.getMessage)
       exception match {
         case e: DomainError => makeFailureResult(e)
         case _ => makeFailureResult(DomainError.UnexpectedServiceError)
       }
   }
+
 }
 
 object JourneysApi{

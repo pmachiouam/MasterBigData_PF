@@ -8,14 +8,6 @@ import scala.concurrent.Future
 
 
 class JourneyServiceBase(modelService: ModelService[Future]) extends JourneysService{
-
- /* override def getJourney(id: Long): Future[Journey] = modelService.findJourneyById(id)
-
-  override def getJourney(label: String): Future[Seq[Journey]] = modelService.findJourneysByLabel(label)
-
-  override def getAllJourneys(): Future[Seq[Journey]]= modelService.findAllJourneys()
-*/
-
   override def getDeviceJourney(request: Entities.JourneyByDeviceIdRequest): Future[Journey] =
     modelService.findJourneyById(request.deviceId, request.journeyId)
 

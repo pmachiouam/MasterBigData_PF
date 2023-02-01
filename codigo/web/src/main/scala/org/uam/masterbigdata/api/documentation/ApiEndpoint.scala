@@ -11,9 +11,9 @@ trait ApiEndpoint {
   private[api] lazy val baseApiResource: EndpointInput[Unit] = apiResource / apiVersion
 
   //urls para los modelos (Se llaman desde sus respectivas apis)
-  private[api] lazy val journeysResourceName = "journeys"
+  private[api] lazy val journeysResourceName = "trayectos"
   private[api] lazy val framesResourceName = "frames"
-  private[api] lazy val eventsResourceName = "events"
+  private[api] lazy val eventsResourceName = "eventos"
 
   private[api] lazy val deviceIdPath = path[Long]("deviceId")
   private[api] lazy val objectIdPath = path[String]("objectId")

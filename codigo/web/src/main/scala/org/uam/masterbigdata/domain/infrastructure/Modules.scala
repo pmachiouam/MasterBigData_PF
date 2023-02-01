@@ -1,9 +1,10 @@
 package org.uam.masterbigdata.domain.infrastructure
 
-import org.uam.masterbigdata.domain.infrastructure.repository.JourneysRepository
+import org.uam.masterbigdata.domain.infrastructure.repository.{EventsRepository, JourneysRepository}
 
 trait PersistenceModule {
   val journeysRepository : JourneysRepository
+  val eventsRepository: EventsRepository
 }
 
 trait DataAccessLayer

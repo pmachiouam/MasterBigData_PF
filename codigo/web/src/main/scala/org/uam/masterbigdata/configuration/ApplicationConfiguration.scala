@@ -4,9 +4,10 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteConcatenation._
 import akka.stream.Materializer
 import com.typesafe.config.{Config, ConfigFactory}
-import org.uam.masterbigdata.api.{ActuatorApi, JourneysApi, SwaggerApi}
-import org.uam.masterbigdata.domain.infrastructure.{DataAccessLayer, DomainModelService, JourneyServiceBase, RelationalRepository}
-import org.uam.masterbigdata.domain.service.JourneysService
+import org.uam.masterbigdata.api.{ActuatorApi, JourneysApi, SwaggerApi, EventsApi}
+import org.uam.masterbigdata.domain.infrastructure.repository.EventsRepository
+import org.uam.masterbigdata.domain.infrastructure.{DataAccessLayer, DomainModelService, JourneyServiceBase, EventsServiceBase, RelationalRepository}
+import org.uam.masterbigdata.domain.service.{EventsService, JourneysService}
 import slick.basic.DatabaseConfig
 import slick.jdbc.{JdbcBackend, JdbcProfile}
 
@@ -33,6 +34,7 @@ trait ApplicationConfiguration {
       override val db: JdbcBackend#DatabaseDef = databaseConfig.db
       override val profile: JdbcProfile = slick.jdbc.PostgresProfile
       override val journeysRepository = new JourneysRelationalRepository()
+      override val eventsRepository: EventsRepository = new EventsRelationalRepository()
     }
   }
   val modeler = new DomainModelService(dataAccessLayer)
@@ -41,8 +43,12 @@ trait ApplicationConfiguration {
   //Journeys
   private val journeysService:JourneysService = JourneyServiceBase(modeler)
   private val journeysApi: JourneysApi = JourneysApi(journeysService)
+  //Events
+  private val eventsService:EventsService = EventsServiceBase(modeler)
+  private val eventsApi: EventsApi = EventsApi(eventsService)
+
 
   /**RUTAS WEB*/
   lazy val routes: Route =
-    ActuatorApi.route ~ SwaggerApi.route ~ journeysApi.routes
+    ActuatorApi.route ~ SwaggerApi.route ~ journeysApi.routes ~ eventsApi.routes
 }

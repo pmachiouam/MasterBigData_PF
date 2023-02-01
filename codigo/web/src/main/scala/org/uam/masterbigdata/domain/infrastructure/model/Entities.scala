@@ -16,5 +16,31 @@ object Entities {
                       , label:String
                     )
 
+  case class EventDbo(
+                         id: Long
+                         , device_id: Long
+                         , created: Long
+                         , type_id: Long
+                         , location_address: String
+                         , location_latitude: Float
+                         , location_longitude: Float
+                         , value: String
+                       )
+
+  case class FrameDbo(
+                         id: Long
+                         , device_id: Long
+                         , created: Long
+                         , received: Long
+                         , location_created: Long
+                         , location_address: String
+                         , location_latitude: Float
+                         , location_longitude: Float
+                         , location_altitude: Float
+                         , location_speed: Float
+                         , location_valid: Boolean
+                         , location_course: Float
+                         , ignition: Boolean
+                       )
 
 }

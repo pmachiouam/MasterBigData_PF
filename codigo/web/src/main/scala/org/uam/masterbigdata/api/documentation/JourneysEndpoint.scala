@@ -9,7 +9,6 @@ import sttp.tapir.{Endpoint, EndpointInput, _}
 
 trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
 
-
   private lazy  val journeyByIdResource: EndpointInput[(Long, String)]= journeysResource / objectIdPath
   lazy val getJourneyByIdEndpoint: Endpoint[(Long, String), DomainError, JourneyView, Nothing] =
     baseEndpoint
@@ -39,10 +38,8 @@ trait JourneysEndpoint extends JsonCodecs  with ApiErrorMapping {
       .in(journeysResource)
       .out(jsonBody[Seq[JourneyView]])
       .errorOut(oneOf(statusNotFound, statusConflict, statusBadRequest, statusInternalServerError, statusDefault))
-
-
 }
 
 object JourneysEndpoint extends JourneysEndpoint{
-  //private val journeyViewExample: JourneyView = JourneyView("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11")
+
 }
