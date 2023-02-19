@@ -1,5 +1,4 @@
 import Dependencies.{Version => CommonVersion}
-import WebDependencies.Version
 import sbt._
 
 object WebDependencies {

@@ -1,6 +1,13 @@
 import sbt._
 
 object Dependencies {
+
+  val production: List[ModuleID] =
+    // L O G B A C K
+   "net.logstash.logback" % "logstash-logback-encoder" % Version.encoder ::Nil
+
+  val test:List[ModuleID] = "org.scalatest" %% "scalatest" % Version.scalaTest % "test"::Nil
+
   object Version {
     val akka = "2.6.13"
     val akkaHttp = "10.2.5"
@@ -10,5 +17,11 @@ object Dependencies {
     val circe = "0.13.0"
     val json4s = "3.6.11"
     val postgres = "42.2.10"
+    val scalaTestVersion = "3.2.15"
+    val encoder = "7.2"
+    val scalaTest = "3.2.15"
+    val sparkVersion = "3.2.3"
+    val sparkFastTests = "1.3.0"
+    val sparkDaria = "1.2.3"
   }
 }
