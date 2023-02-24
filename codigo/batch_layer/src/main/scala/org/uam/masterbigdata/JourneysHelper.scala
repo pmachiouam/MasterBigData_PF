@@ -78,29 +78,59 @@ object JourneysHelper {
         , last(col("location_latitude"), true).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp_unbound)
       )
       .withColumn("end_location_longitude"
-        , last(col("location_longitude"), true ).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp_unbound)
+        , last(col("location_longitude"), true).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp_unbound)
       )
   }
 
   /**
+   * Calculate the counters values
+   * Distance : difference between the current mileage distance and the previous one. In meters
+   * Consumption : difference between the current fuel consumed volume and the previous one. In liters
    * */
-  def setCountersValues()(df:DataFrame):DataFrame = {
+  def setCountersValues()(df: DataFrame): DataFrame = {
     val canbusDistanceCol: Column = col("can").getField("vehicle").getField("mileage").getField("distance")
     val canbusConsumptionCol: Column = col("can").getField("fuel").getField("consumed").getField("volume")
 
     df.withColumn("distance"
-      , canbusDistanceCol- coalesce(lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp), canbusDistanceCol)
+      , canbusDistanceCol - coalesce(lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp), canbusDistanceCol)
     ).withColumn("consumption"
       , canbusConsumptionCol - coalesce(lag(canbusConsumptionCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp), canbusConsumptionCol)
     )
   }
 
   /**
-   * Aggregates the initial and final values per StateChange and:
-   * * Consumption
-   * * Distance
+   * Aggregates the counters value by device, state_changed_group, start_* and end_value:
+   * * Sum all the consumption
+   * * Sum all the distance
    * */
-  def aggregateStateChangeValues()(df:DataFrame):DataFrame = {
-    ???
+  def aggregateStateChangeValues()(df: DataFrame): DataFrame = {
+    df.select(
+      col("attributes").getField("deviceId").as("deviceId")
+      , col("state_changed_group")
+      , col("start_timestamp")
+      , col("start_location_address")
+      , col("start_location_latitude")
+      , col("start_location_longitude")
+      , col("end_timestamp")
+      , col("end_location_address")
+      , col("end_location_latitude")
+      , col("end_location_longitude")
+      , col("distance")
+      , col("consumption")
+    ).groupBy(
+      col("deviceId")
+      , col("state_changed_group")
+      , col("start_timestamp")
+      , col("start_location_address")
+      , col("start_location_latitude")
+      , col("start_location_longitude")
+      , col("end_timestamp")
+      , col("end_location_address")
+      , col("end_location_latitude")
+      , col("end_location_longitude")
+    ).agg(
+      sum(col("distance")).as("distance")
+      , sum(col("consumption")).as("consumption")
+    )
   }
 }
