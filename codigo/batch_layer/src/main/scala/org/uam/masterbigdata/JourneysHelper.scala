@@ -2,19 +2,35 @@ package org.uam.masterbigdata
 
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{coalesce, col, first, lag, last, least, sum, when}
+import org.apache.spark.sql.functions.{coalesce, col, expr, first, lag, last, least, lit, sum, when}
+import org.apache.spark.sql.types.StringType
+
+import scala.util.Try
 
 object JourneysHelper {
 
+
   def calculateJourneys()(df: DataFrame): DataFrame = {
-    df.transform(setIgnitionStateChange())
+    df.transform(DateHelper.convertToDate("timestamp", "timestamp"))
+      .transform(flatMainFields())
+      .transform(setIgnitionStateChange())
       .transform(setGroupOfStateChangesToFrames())
       .transform(setInitialStateChangeValues())
       .transform(setFinalStateChangeValues())
       .where(col("ignition") =!= false)
-    //agrupar y agregar
-    //.groupBy(col("state_changed_group"))
+      .transform(setCountersValues())
+      .transform(aggregateStateChangeValues())
     //añadir identificador creado por UUID
+  }
+
+  def flatMainFields()(df: DataFrame): DataFrame = {
+    df.withColumn("location_address", col("gnss").getField("address"))
+      .withColumn("location_latitude", col("gnss").getField("coordinate").getField("lat"))
+      .withColumn("location_longitude", col("gnss").getField("coordinate").getField("lng"))
+      .drop(col("gnss"))
+      .withColumn("_ignition", col("ignition").getField("status"))
+      .drop(col("ignition").getField("status")).drop("ignition")
+      .withColumnRenamed("_ignition", "ignition")
   }
 
   private val window_partition_by_deviceId_order_by_timestamp = Window
@@ -89,12 +105,21 @@ object JourneysHelper {
    * */
   def setCountersValues()(df: DataFrame): DataFrame = {
     val canbusDistanceCol: Column = col("can").getField("vehicle").getField("mileage").getField("distance")
+    val canbusDistanceColLag:Column = lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp)
+    val canbusDistanceColValue: Column = canbusDistanceCol - coalesce(canbusDistanceColLag, canbusDistanceCol)
+
     val canbusConsumptionCol: Column = col("can").getField("fuel").getField("consumed").getField("volume")
+    val canbusConsumptionColLag: Column = lag(canbusConsumptionCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp)
+    val canbusConsumptionValue: Column = canbusConsumptionCol - coalesce(canbusConsumptionColLag, canbusConsumptionCol)
 
     df.withColumn("distance"
-      , canbusDistanceCol - coalesce(lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp), canbusDistanceCol)
+      , when(canbusDistanceCol.isNotNull
+        , canbusDistanceColValue)
+        .otherwise( 0)
     ).withColumn("consumption"
-      , canbusConsumptionCol - coalesce(lag(canbusConsumptionCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp), canbusConsumptionCol)
+      , when(canbusConsumptionCol.isNotNull
+        , canbusConsumptionValue)
+        .otherwise(0)
     )
   }
 
@@ -105,8 +130,8 @@ object JourneysHelper {
    * */
   def aggregateStateChangeValues()(df: DataFrame): DataFrame = {
     df.select(
-      col("attributes").getField("deviceId").as("deviceId")
-      , col("state_changed_group")
+       col("state_changed_group")
+      , expr("cast( attributes.deviceId as long) as deviceId")
       , col("start_timestamp")
       , col("start_location_address")
       , col("start_location_latitude")
@@ -118,8 +143,8 @@ object JourneysHelper {
       , col("distance")
       , col("consumption")
     ).groupBy(
-      col("deviceId")
-      , col("state_changed_group")
+       col("state_changed_group")
+      , col("deviceId")
       , col("start_timestamp")
       , col("start_location_address")
       , col("start_location_latitude")
@@ -131,6 +156,13 @@ object JourneysHelper {
     ).agg(
       sum(col("distance")).as("distance")
       , sum(col("consumption")).as("consumption")
+    ).select(expr("uuid()").as("id")
+      , col("*")
+      , lit("").as("label")
     )
+    .drop("state_changed_group")
+
   }
+
+
 }

@@ -1,13 +1,10 @@
 package org.uam.masterbigdata
 
 import com.github.mrpowers.spark.fast.tests.DataFrameComparer
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, StringType, StructField, StructType, TimestampType}
 import org.scalatest.funspec.AnyFunSpec
 
-import java.sql.Timestamp
 import java.util.UUID
-import java.util.ArrayList
 
 class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSessionTestWrapper with DataFrameTestHelper with Schemas {
 
@@ -302,6 +299,80 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
         )
         , expected_schema
       )
+      assertSmallDataFrameEquality(actualDF, expectedDF)
+    }
+  }
+
+  describe("flatMainFields") {
+    val source_schema: StructType = StructType(
+      Array(
+        StructField("timestamp", StringType, nullable = false)
+        , StructField("gnss", StructType(
+          Array(
+            StructField("type", StringType, nullable = false)
+            , StructField("coordinate", StructType(
+              Array(
+                StructField("lat", DoubleType, nullable = false)
+                , StructField("lng", DoubleType, nullable = false)
+              )
+            ))
+            , StructField("altitude", DoubleType)
+            , StructField("speed", IntegerType)
+            , StructField("course", IntegerType)
+            , StructField("address", StringType)
+            , StructField("satellites", IntegerType)
+          )
+        ))
+        , StructField("ignition", StructType(
+          Array(
+            StructField("status", BooleanType)
+          )
+        ))
+      )
+    )
+
+    val expected_schema: StructType = StructType(
+      Array(
+         StructField("timestamp", StringType, nullable = false)
+        , StructField("location_address", StringType, nullable = false)
+        , StructField("location_latitude", DoubleType, nullable = false)
+        , StructField("location_longitude", DoubleType, nullable = false)
+        , StructField("ignition", BooleanType, nullable = false)
+      )
+    )
+
+    it("Flats the main fields for the journeys analisis") {
+      val sourceDF = jsonToDF(
+        List(
+          """{"timestamp":"2023-02-05 10:58:27"
+            |,"gnss":{
+            |          "type":"Gps"
+            |          ,"coordinate":{
+            |                          "lat":40.605956
+            |                          ,"lng":-3.711923
+            |                        }
+            |          ,"altitude":722.0
+            |          ,"speed":0
+            |          ,"course":212
+            |          ,"address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
+            |          ,"satellites":13
+            |          }
+            |,"ignition":{"status":false}}""".stripMargin
+        )
+        , source_schema)
+
+      val actualDF = JourneysHelper.flatMainFields()(sourceDF)
+
+      val expectedDF = jsonToDF(
+        List(
+          """{"timestamp":"2023-02-05 10:58:27"
+            |,"location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
+            |,"location_latitude":40.605956
+            |,"location_longitude":-3.711923
+            |,"ignition":false}""".stripMargin
+        )
+        , expected_schema)
+
       assertSmallDataFrameEquality(actualDF, expectedDF)
     }
   }
@@ -976,6 +1047,73 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
 
       assertSmallDataFrameEquality(actualDF, expectedDF)
     }
+
+    it("Handle values when canbus fields are missing") {
+      val sourceDF = jsonToDF(
+        List(
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:01"
+            |, "state_changed":0, "state_changed_group":0
+            |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
+            |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:02"
+            |, "state_changed":0, "state_changed_group":1
+            |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
+            |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:03"
+            |, "state_changed":0, "state_changed_group":1
+            |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
+            |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:04"
+            |, "state_changed":0, "state_changed_group":2
+            |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
+            |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4}""".stripMargin
+        )
+        , source_schema)
+
+      val actualDF = JourneysHelper.setCountersValues()(sourceDF)
+
+      val expectedDF = jsonToDF(
+        List(
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:01"
+            |, "state_changed":0, "state_changed_group":0
+            |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
+            |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
+            |, "distance":0, "consumption":0 }""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:02"
+            |, "state_changed":0, "state_changed_group":1
+            |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
+            |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
+            |, "distance":0, "consumption":0 }""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:03"
+            |, "state_changed":0, "state_changed_group":1
+            |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
+            |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
+            |, "distance":0, "consumption":0 }""".stripMargin
+          ,
+          """{"ignition":false, "attributes":{"deviceId":1}
+            |, "timestamp":"2022-02-01 00:00:04"
+            |, "state_changed":0, "state_changed_group":2
+            |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
+            |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
+            |, "distance":0, "consumption":0 }""".stripMargin
+        )
+        , expected_schema)
+
+
+      assertSmallDataFrameEquality(actualDF, expectedDF)
+    }
   }
 
 
@@ -1003,8 +1141,8 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
     )
     val expected_schema = StructType(
       Array(
-        StructField("deviceId", IntegerType, nullable = false)
-        , StructField("state_changed_group", LongType, nullable = false)
+        StructField("id", StringType, nullable = false)
+        , StructField("deviceId", LongType, nullable = false)
         , StructField("start_timestamp", TimestampType, nullable = false)
         , StructField("start_location_address", StringType, nullable = false)
         , StructField("start_location_latitude", DoubleType, nullable = false)
@@ -1015,6 +1153,7 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
         , StructField("end_location_longitude", DoubleType, nullable = false)
         , StructField("distance", LongType, nullable = false)
         , StructField("consumption", LongType, nullable = false)
+        , StructField("label", StringType, nullable = false)
       )
     )
 
@@ -1051,27 +1190,27 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
 
       val expectedDF = jsonToDF(
         List(
-          """{"deviceId":1
+          """{"id":"a", "deviceId":1
             |, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
-            |, "distance":0, "consumption":0 }""".stripMargin
+            |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"deviceId":1
-            |, "state_changed_group":1
+          """{"id":"b","deviceId":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
-            |, "distance":100, "consumption":10 }""".stripMargin
+            |, "distance":100, "consumption":10, "label":"" }""".stripMargin
           ,
-          """{"deviceId":1
-            |, "state_changed_group":2
+          """{"id":"c","deviceId":1
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
-            |, "distance":0, "consumption":0 }""".stripMargin
+            |, "distance":0, "consumption":0, "label":"" }""".stripMargin
         )
         , expected_schema)
 
-      assertSmallDataFrameEquality(actualDF, expectedDF)
+
+      //quitamos el id, ya que no podemos crear el mismo UUID en ambos dataframes
+      assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
     }
 
     it("Aggregates values of the different StateChange of two devices") {
@@ -1131,82 +1270,224 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
 
       val expectedDF = jsonToDF(
         List(
-          """{"deviceId":1
-            |, "state_changed_group":0
+          """{"id":"a", "deviceId":1
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
-            |, "distance":0, "consumption":0 }""".stripMargin
+            |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"deviceId":2
-            |, "state_changed_group":0
+          """{"id":"b","deviceId":2
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
-            |, "distance":90, "consumption":9 }""".stripMargin
+            |, "distance":90, "consumption":9, "label":"" }""".stripMargin
           ,
-          """{"deviceId":1
-            |, "state_changed_group":1
+          """{"id":"c","deviceId":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
-            |, "distance":100, "consumption":10 }""".stripMargin
+            |, "distance":100, "consumption":10, "label":"" }""".stripMargin
           ,
-          """{"deviceId":2
-            |, "state_changed_group":1
+          """{"id":"d", "deviceId":2
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
-            |, "distance":200, "consumption":20 }""".stripMargin
+            |, "distance":200, "consumption":20, "label":"" }""".stripMargin
           ,
-          """{"deviceId":1
-            |, "state_changed_group":2
+          """{"id":"e", "deviceId":1
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
-            |, "distance":0, "consumption":0 }""".stripMargin
+            |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"deviceId":2
-            |, "state_changed_group":2
+          """{"id":"f", "deviceId":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
-            |, "distance":100, "consumption":10 }""".stripMargin
+            |, "distance":100, "consumption":10, "label":"" }""".stripMargin
         )
         , expected_schema)
 
-      assertSmallDataFrameEquality(actualDF, expectedDF)
+      //quitamos el id, ya que no podemos crear el mismo UUID en ambos dataframes
+      assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
     }
   }
 
 
   describe("calculateJourneys") {
-    it("If ignition on and off set journey") {
-      val journeyRaw: java.util.List[Row] = new ArrayList[Row]()
-      journeyRaw.add(
-        Row(UUID.randomUUID().toString
-          , 1328414834680696832L
-          , Timestamp.valueOf("2023-02-05 10:55:28.808")
-          , "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1"
-          , 40.605957
-          , -3.711923
-          , Timestamp.valueOf("2023-02-05 10:57:28.808")
-          , "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3"
-          , 40.605959
-          , -3.711921
-          , 12
-          , null)
-      )
+    it("If ignition changes from on and off a journey is created") {
+      val expectedDF = jsonToDF(List(
+        s"""{"id":"${UUID.randomUUID().toString}", "deviceId":1328414834680696832
+           |,"start_timestamp":"2023-02-05 10:55:27" ,"start_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1"
+           |,"start_location_latitude":40.605957 ,"start_location_longitude":-3.711923
+           |,"end_timestamp":"2023-02-05 10:57:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3"
+           |,"end_location_latitude":40.605959, "end_location_longitude":-3.711921
+           |,"distance":0, "consumption":0 ,"label":""}""".stripMargin
+      ), journey_schema)
 
-      val expectedDF = spark.createDataFrame(journeyRaw, journey_schema)
+      val sourceDF = jsonToDF(
+        List(
+          """{
+            "id": 1622186900238446592
+            , "version": "1"
+            , "timestamp": "2023-02-05T10:54:27Z"
+            , "server": {"timestamp": "2023-02-05T10:54:28.808Z"}
+            , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+            , "gnss": {"type": "Gps","coordinate":{ "lat":40.605956 ,"lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
+            , "ignition": {"status": false}}"""
+          , """{
+            "id": 1622186900238446592
+            , "version": "1"
+            , "timestamp": "2023-02-05T10:55:27Z"
+            , "server": {"timestamp": "2023-02-05T10:55:28.808Z"}
+            , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+            , "gnss": { "type": "Gps", "coordinate": { "lat":40.605957, "lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
+            , "ignition": {"status": true}}"""
+          , """{
+            "id": 1622186900238446592
+            , "version": "1"
+            , "timestamp": "2023-02-05T10:56:27Z"
+            , "server": {"timestamp": "2023-02-05T10:56:28.808Z"}
+            , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+            , "gnss": {"type": "Gps", "coordinate": {"lat":40.605958, "lng" :-3.711922}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
+            , "ignition": {"status": true}}"""
+          , """{
+            "id": 1622186900238446592
+            , "version": "1"
+            , "timestamp": "2023-02-05T10:57:27Z"
+            , "server": {"timestamp": "2023-02-05T10:57:28.808Z"}
+            , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+            , "gnss": {"type": "Gps", "coordinate": {"lat":40.605959, "lng" :-3.711921}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
+            , "ignition": {"status": true}}"""
+          , """{
+            "id": 1622186900238446592
+            , "version": "1"
+            , "timestamp": "2023-02-05T10:58:27Z"
+            , "server": { "timestamp": "2023-02-05T10:58:28.808Z"}
+            , "attributes": { "tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC" }
+            , "gnss": { "type": "Gps", "coordinate": { "lat":40.605956, "lng" :-3.711923}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13 }
+            , "ignition": { "status": false } }"""
+        )
+        ,telemetry_schema)
 
-      val sourceDF = spark.read.schema(telemetry_schema).json("batch_layer/src/test/resources/data/journeysHelperSpec/completeJourney.json")
+      val actualDF = JourneysHelper.calculateJourneys()(sourceDF)
 
-      val currentDF = sourceDF.transform(JourneysHelper.calculateJourneys())
-
-      assertSmallDataFrameEquality(expectedDF, currentDF)
+      //para comparar quitamos los id porque se generan de forma independiente y no van a coincidir
+      assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
     }
 
-    it("If ignition just on, no journey is created") {
-      ???
+    it("If ignition just on, a journey is created") {
+      val expectedDF = jsonToDF(List(
+        s"""{"id":"${UUID.randomUUID().toString}", "deviceId":1328414834680696832
+           |,"start_timestamp":"2023-02-05 10:54:27" ,"start_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
+           |,"start_location_latitude":40.605956 ,"start_location_longitude":-3.711923
+           |,"end_timestamp":"2023-02-05 10:58:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a4"
+           |,"end_location_latitude":40.605956, "end_location_longitude":-3.711923
+           |,"distance":0, "consumption":0 ,"label":""}""".stripMargin
+      ), journey_schema)
+
+      val sourceDF = jsonToDF(
+        List(
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:54:27Z"
+              , "server": {"timestamp": "2023-02-05T10:54:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps","coordinate":{ "lat":40.605956 ,"lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:55:27Z"
+              , "server": {"timestamp": "2023-02-05T10:55:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605957, "lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:56:27Z"
+              , "server": {"timestamp": "2023-02-05T10:56:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605958, "lng" :-3.711922}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:57:27Z"
+              , "server": {"timestamp": "2023-02-05T10:57:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605959, "lng" :-3.711921}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:58:27Z"
+              , "server": { "timestamp": "2023-02-05T10:58:28.808Z"}
+              , "attributes": { "tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC" }
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605956, "lng" :-3.711923}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a4", "precision": "Ideal", "satellites": 13 }
+              , "ignition": { "status": true } }"""
+        )
+        , telemetry_schema)
+
+      val actualDF = JourneysHelper.calculateJourneys()(sourceDF)
+
+      //para comparar quitamos los id porque se generan de forma independiente y no van a coincidir
+      assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
     }
 
     it("If ignition just off, no journey is created") {
-      ???
+      val sourceDF = jsonToDF(
+        List(
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:54:27Z"
+              , "server": {"timestamp": "2023-02-05T10:54:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps","coordinate":{ "lat":40.605956 ,"lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:55:27Z"
+              , "server": {"timestamp": "2023-02-05T10:55:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605957, "lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:56:27Z"
+              , "server": {"timestamp": "2023-02-05T10:56:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605958, "lng" :-3.711922}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:57:27Z"
+              , "server": {"timestamp": "2023-02-05T10:57:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605959, "lng" :-3.711921}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:58:27Z"
+              , "server": { "timestamp": "2023-02-05T10:58:28.808Z"}
+              , "attributes": { "tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC" }
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605956, "lng" :-3.711923}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13 }
+              , "ignition": { "status": false } }"""
+        )
+        , telemetry_schema)
+
+      val actualDF = JourneysHelper.calculateJourneys()(sourceDF)
+
+      assert(actualDF.count() === 0L)
     }
   }
 

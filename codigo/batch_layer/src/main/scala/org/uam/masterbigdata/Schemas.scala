@@ -1,6 +1,6 @@
 package org.uam.masterbigdata
 
-import org.apache.spark.sql.types.{StructType, StructField, LongType, StringType, BooleanType, DoubleType, IntegerType, TimestampType}
+import org.apache.spark.sql.types.{BooleanType, DoubleType, FloatType, IntegerType, LongType, StringType, StructField, StructType, TimestampType}
 
 trait Schemas {
 
@@ -38,14 +38,14 @@ trait Schemas {
             )
           ))
         )
-      ))
+      ), nullable = true)
       , StructField("can", StructType(
         Array(
           StructField("vehicle", StructType(
             Array(
               StructField("mileage", StructType(
                 Array(
-                  StructField("mileage", LongType)
+                  StructField("distance", LongType)
                 )
               ))
               , StructField("cruise", StructType(
@@ -143,8 +143,17 @@ trait Schemas {
               ))
             )
           ))
+          , StructField("fuel", StructType(
+            Array(
+              StructField("consumed", StructType(
+                Array(
+                  StructField("volume", LongType)
+                )
+              ))
+            )
+          ))
         )
-      ))
+      ), nullable = true)
       , StructField("gnss", StructType(
         Array(
           StructField("type", StringType, nullable = false)
@@ -155,19 +164,18 @@ trait Schemas {
             )
           )
           )
-          , StructField("altitude", IntegerType)
+          , StructField("altitude", DoubleType)
           , StructField("speed", IntegerType)
           , StructField("course", IntegerType)
           , StructField("address", StringType)
           , StructField("satellites", IntegerType)
         )
-      ))
+      ), nullable = true)
       , StructField("ignition", StructType(
         Array(
           StructField("status", BooleanType)
         )
-      )
-      )
+      ), nullable = true)
     )
   )
 
@@ -184,7 +192,8 @@ trait Schemas {
       ,StructField("end_location_address", StringType, nullable = false)
       ,StructField("end_location_latitude", DoubleType, nullable = false)
       ,StructField("end_location_longitude", DoubleType, nullable = false)
-      ,StructField("distance", IntegerType, nullable = true)
+      ,StructField("distance", LongType, nullable = true)
+      ,StructField("consumption", LongType, nullable = true)
       ,StructField("label", StringType, nullable = true)
     )
   )
