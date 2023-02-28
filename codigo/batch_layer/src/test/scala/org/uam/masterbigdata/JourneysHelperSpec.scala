@@ -6,7 +6,11 @@ import org.scalatest.funspec.AnyFunSpec
 
 import java.util.UUID
 
-class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSessionTestWrapper with DataFrameTestHelper with Schemas {
+class JourneysHelperSpec extends AnyFunSpec
+  with DataFrameComparer
+  with SparkSessionTestWrapper
+  with DataFrameTestHelper
+  with Schemas {
 
   describe("setIgnitionStateChange") {
     val source_schema: StructType = StructType(
@@ -333,7 +337,7 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
 
     val expected_schema: StructType = StructType(
       Array(
-         StructField("timestamp", StringType, nullable = false)
+        StructField("timestamp", StringType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
         , StructField("location_longitude", DoubleType, nullable = false)
@@ -1329,7 +1333,8 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
             , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
             , "gnss": {"type": "Gps","coordinate":{ "lat":40.605956 ,"lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
             , "ignition": {"status": false}}"""
-          , """{
+          ,
+          """{
             "id": 1622186900238446592
             , "version": "1"
             , "timestamp": "2023-02-05T10:55:27Z"
@@ -1337,7 +1342,8 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
             , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
             , "gnss": { "type": "Gps", "coordinate": { "lat":40.605957, "lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
             , "ignition": {"status": true}}"""
-          , """{
+          ,
+          """{
             "id": 1622186900238446592
             , "version": "1"
             , "timestamp": "2023-02-05T10:56:27Z"
@@ -1345,7 +1351,8 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
             , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
             , "gnss": {"type": "Gps", "coordinate": {"lat":40.605958, "lng" :-3.711922}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
             , "ignition": {"status": true}}"""
-          , """{
+          ,
+          """{
             "id": 1622186900238446592
             , "version": "1"
             , "timestamp": "2023-02-05T10:57:27Z"
@@ -1353,7 +1360,8 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
             , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
             , "gnss": {"type": "Gps", "coordinate": {"lat":40.605959, "lng" :-3.711921}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
             , "ignition": {"status": true}}"""
-          , """{
+          ,
+          """{
             "id": 1622186900238446592
             , "version": "1"
             , "timestamp": "2023-02-05T10:58:27Z"
@@ -1362,7 +1370,7 @@ class JourneysHelperSpec extends AnyFunSpec with DataFrameComparer with SparkSes
             , "gnss": { "type": "Gps", "coordinate": { "lat":40.605956, "lng" :-3.711923}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13 }
             , "ignition": { "status": false } }"""
         )
-        ,telemetry_schema)
+        , telemetry_schema)
 
       val actualDF = JourneysHelper.calculateJourneys()(sourceDF)
 

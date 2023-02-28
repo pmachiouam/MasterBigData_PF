@@ -48,6 +48,7 @@ trait Schemas {
                   StructField("distance", LongType)
                 )
               ))
+              , StructField("pedals", StructType(Array(StructField("throttle", StructType(Array(StructField("level",IntegerType)))))))
               , StructField("cruise", StructType(
                 Array(
                   StructField("status", BooleanType)
@@ -195,6 +196,19 @@ trait Schemas {
       ,StructField("distance", LongType, nullable = true)
       ,StructField("consumption", LongType, nullable = true)
       ,StructField("label", StringType, nullable = true)
+    )
+  )
+
+  val event_schema:StructType = StructType(
+    Array(
+      StructField("id", LongType, nullable = false)
+      , StructField("device_id", LongType, nullable = false)
+      , StructField("created", TimestampType, nullable = false)
+      , StructField("type_id", LongType, nullable = false)
+      , StructField("location_address", StringType, nullable = false)
+      , StructField("location_latitude", DoubleType, nullable = false)
+      , StructField("location_longitude", DoubleType, nullable = false)
+      , StructField("value", StringType, nullable = false)
     )
   )
 }
