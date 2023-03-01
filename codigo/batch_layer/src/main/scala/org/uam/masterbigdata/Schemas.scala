@@ -184,7 +184,7 @@ trait Schemas {
   val journey_schema:StructType = StructType(
     Array(
       StructField("id", StringType, nullable = false)
-      ,StructField("deviceId", LongType, nullable = false)
+      ,StructField("device_id", LongType, nullable = false)
       ,StructField("start_timestamp", TimestampType, nullable = false)
       ,StructField("start_location_address", StringType, nullable = false)
       ,StructField("start_location_latitude", DoubleType, nullable = false)

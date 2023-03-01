@@ -16,12 +16,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema: StructType = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
       )
     )
@@ -29,12 +24,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("state_changed", IntegerType)
       )
@@ -43,10 +33,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("If the state of ignition doesn't change (always false) from previous frame to current the value is 0") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
         )
         , source_schema
       )
@@ -54,10 +44,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -67,10 +57,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("If the state of ignition doesn't change (always true) from previous frame to current the value is 0") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
+        List("""{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
         )
         , source_schema
       )
@@ -78,10 +68,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -91,10 +81,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("If the state of ignition changes (from true to false) from previous frame to current the value is 1") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
+        List("""{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
         )
         , source_schema
       )
@@ -102,10 +92,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -115,10 +105,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("If the state of ignition changes (from false to true) from previous frame to current the value is 1") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
         )
         , source_schema
       )
@@ -126,10 +116,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -140,14 +130,14 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("With 2 devices. If the state of ignition changes (from false to true) from previous frame to current the value is 1") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:02"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:04"}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:02"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:04"}"""
         )
         , source_schema
       )
@@ -155,14 +145,14 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -172,10 +162,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("With the unordered frames. If the state of ignition changes (from false to true) from previous frame to current the value is 1") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01"}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04"}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02"}"""
+        List("""{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01"}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04"}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02"}"""
         )
         , source_schema
       )
@@ -183,10 +173,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setIgnitionStateChange()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , expected_schema
       )
@@ -198,12 +188,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("state_changed", IntegerType)
       )
@@ -212,12 +197,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("state_changed", IntegerType)
         , StructField("state_changed_group", LongType)
@@ -226,10 +206,10 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("There is no state change so there is no increment in the group identifier") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , source_schema
       )
@@ -237,10 +217,10 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setGroupOfStateChangesToFrames()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":0}"""
         )
         , expected_schema
       )
@@ -249,12 +229,12 @@ class JourneysHelperSpec extends AnyFunSpec
     //con grupo
     it("There are two state changes so the group is increased by two") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:05", "state_changed":1}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:06", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:05", "state_changed":1}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:06", "state_changed":0}"""
         )
         , source_schema
       )
@@ -262,12 +242,12 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setGroupOfStateChangesToFrames()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:05", "state_changed":1, "state_changed_group":2}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:06", "state_changed":0, "state_changed_group":2}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:05", "state_changed":1, "state_changed_group":2}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:06", "state_changed":0, "state_changed_group":2}"""
         )
         , expected_schema
       )
@@ -277,14 +257,14 @@ class JourneysHelperSpec extends AnyFunSpec
     //con grupo 2 dispositivos
     it("Two devices. There is one state change by device so there is one increment in the group identifier per device ") {
       val sourceDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:01", "state_changed":0}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:02", "state_changed":0}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:03", "state_changed":1}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:04", "state_changed":0}"""
         )
         , source_schema
       )
@@ -292,14 +272,14 @@ class JourneysHelperSpec extends AnyFunSpec
       val actualDF = JourneysHelper.setGroupOfStateChangesToFrames()(sourceDF)
 
       val expectedDF = jsonToDF(
-        List("""{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":1}, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":false, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
-          , """{"ignition":true, "attributes":{"deviceId":2}, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
+        List("""{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":1, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
+          , """{"ignition":true,"device_id":1, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:01", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":false,"device_id":2, "timestamp":"2022-02-01 00:00:02", "state_changed":0, "state_changed_group":0}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:03", "state_changed":1, "state_changed_group":1}"""
+          , """{"ignition":true,"device_id":2, "timestamp":"2022-02-01 00:00:04", "state_changed":0, "state_changed_group":1}"""
         )
         , expected_schema
       )
@@ -311,6 +291,15 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema: StructType = StructType(
       Array(
         StructField("timestamp", StringType, nullable = false)
+        , StructField("attributes", StructType(
+          Array(
+            StructField("tenantId", StringType, nullable = false)
+            , StructField("deviceId", StringType, nullable = false)
+            , StructField("manufacturer", StringType, nullable = false)
+            , StructField("model", StringType, nullable = false)
+            , StructField("identifier", StringType, nullable = false)
+          )
+        ), nullable = false)
         , StructField("gnss", StructType(
           Array(
             StructField("type", StringType, nullable = false)
@@ -338,6 +327,14 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema: StructType = StructType(
       Array(
         StructField("timestamp", TimestampType, nullable = false)
+        , StructField("attributes", StructType(
+          Array(
+            StructField("tenantId", StringType, nullable = false)
+            , StructField("manufacturer", StringType, nullable = false)
+            , StructField("model", StringType, nullable = false)
+            , StructField("identifier", StringType, nullable = false)
+          )
+        ), nullable = false)
         ,StructField("gnss", StructType(
           Array(
             StructField("type", StringType, nullable = false)
@@ -348,6 +345,7 @@ class JourneysHelperSpec extends AnyFunSpec
           )
         ))
         , StructField("ignition", BooleanType, nullable = false)
+        ,StructField("device_id", LongType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
         , StructField("location_longitude", DoubleType, nullable = false)
@@ -358,6 +356,13 @@ class JourneysHelperSpec extends AnyFunSpec
       val sourceDF = jsonToDF(
         List(
           """{"timestamp":"2023-02-05T10:58:27Z"
+            |,"attributes": {
+            |           "tenantId": "763738558589566976"
+            |           , "deviceId": "1328414834680696832"
+            |           , "manufacturer": "Teltonika"
+            |           , "model": "TeltonikaFMB001"
+            |           , "identifier": "352094083025970TSC"
+            |}
             |,"gnss":{
             |          "type":"Gps"
             |          ,"coordinate":{
@@ -379,6 +384,12 @@ class JourneysHelperSpec extends AnyFunSpec
       val expectedDF = jsonToDF(
         List(
           """{"timestamp":"2023-02-05 10:58:27"
+            |,"attributes": {
+            |           "tenantId": "763738558589566976"
+            |           , "manufacturer": "Teltonika"
+            |           , "model": "TeltonikaFMB001"
+            |           , "identifier": "352094083025970TSC"
+            |}
             |,"gnss":{
             |          "type":"Gps"
             |          ,"altitude":722.0
@@ -387,6 +398,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |          ,"satellites":13
             |          }
             |,"ignition":false
+            |,"device_id":1328414834680696832
             |,"location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
             |,"location_latitude":40.605956
             |,"location_longitude":-3.711923}""".stripMargin
@@ -401,12 +413,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
@@ -418,12 +425,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
@@ -443,19 +445,19 @@ class JourneysHelperSpec extends AnyFunSpec
         """) {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
         )
@@ -466,22 +468,22 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4}""".stripMargin
@@ -498,35 +500,35 @@ class JourneysHelperSpec extends AnyFunSpec
         """) {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
         )
@@ -537,42 +539,42 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4}""".stripMargin
@@ -588,12 +590,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
@@ -605,12 +602,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("timestamp", TimestampType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
@@ -629,19 +621,19 @@ class JourneysHelperSpec extends AnyFunSpec
             """) {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
         )
@@ -652,22 +644,22 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4}""".stripMargin
@@ -684,35 +676,35 @@ class JourneysHelperSpec extends AnyFunSpec
             """) {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2}""".stripMargin
         )
@@ -723,42 +715,42 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:01", "location_address":"address1", "location_latitude":1.1, "location_longitude":2.1
             |, "state_changed":0, "state_changed_group":0
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:02", "location_address":"address2", "location_latitude":1.2, "location_longitude":2.2
             |, "state_changed":0, "state_changed_group":1
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             | ,"timestamp":"2022-02-01 00:00:03", "location_address":"address3", "location_latitude":1.3, "location_longitude":2.3
             | , "state_changed":0, "state_changed_group":1
             | , "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "timestamp":"2022-02-01 00:00:04", "location_address":"address4", "location_latitude":1.4, "location_longitude":2.4
             |, "state_changed":0, "state_changed_group":2
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4}""".stripMargin
@@ -774,12 +766,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val source_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("can", StructType(
           Array(
             StructField("vehicle", StructType(
@@ -819,12 +806,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("ignition", BooleanType, nullable = false)
-        , StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+        , StructField("device_id", LongType, nullable = false)
         , StructField("can", StructType(
           Array(
             StructField("vehicle", StructType(
@@ -865,27 +847,27 @@ class JourneysHelperSpec extends AnyFunSpec
     it("Aggregates values of the different StateChange of a device") {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1000 } }, "fuel":{"consumed": {"volume": 100 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1200 } }, "fuel":{"consumed": {"volume": 120 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1300 } }, "fuel":{"consumed": {"volume": 130 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1400 } }, "fuel":{"consumed": {"volume": 140 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
@@ -898,7 +880,7 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1000 } }, "fuel":{"consumed": {"volume": 100 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
@@ -906,14 +888,14 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1200 } }, "fuel":{"consumed": {"volume": 120 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1300 } }, "fuel":{"consumed": {"volume": 130 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
@@ -921,7 +903,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1400 } }, "fuel":{"consumed": {"volume": 140 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
@@ -937,56 +919,56 @@ class JourneysHelperSpec extends AnyFunSpec
     it("Aggregates values of the different StateChange of two devices") {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1000 } }, "fuel":{"consumed": {"volume": 100 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2000 } }, "fuel":{"consumed": {"volume": 200 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1200 } }, "fuel":{"consumed": {"volume": 120 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2200 } }, "fuel":{"consumed": {"volume": 220 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1300 } }, "fuel":{"consumed": {"volume": 130 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2400 } }, "fuel":{"consumed": {"volume": 240 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1400 } }, "fuel":{"consumed": {"volume": 140 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2500 } }, "fuel":{"consumed": {"volume": 250 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
@@ -999,7 +981,7 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1000 } }, "fuel":{"consumed": {"volume": 100 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
@@ -1007,7 +989,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1200 } }, "fuel":{"consumed": {"volume": 120 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
@@ -1015,7 +997,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1300 } }, "fuel":{"consumed": {"volume": 130 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
@@ -1023,7 +1005,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10 } """.stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "can": { "vehicle":{"mileage": {"distance": 1400 } }, "fuel":{"consumed": {"volume": 140 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
@@ -1031,7 +1013,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
             |, "distance":0, "consumption":0 } """.stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2000 } }, "fuel":{"consumed": {"volume": 200 } } }
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
@@ -1039,7 +1021,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2200 } }, "fuel":{"consumed": {"volume": 220 } } }
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
@@ -1047,7 +1029,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 } """.stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2400 } }, "fuel":{"consumed": {"volume": 240 } } }
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
@@ -1055,7 +1037,7 @@ class JourneysHelperSpec extends AnyFunSpec
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":200, "consumption":20 } """.stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":2}
+          """{"ignition":false,"device_id":2
             |, "can": { "vehicle":{"mileage": {"distance": 2500 } }, "fuel":{"consumed": {"volume": 250 } } }
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
@@ -1071,25 +1053,25 @@ class JourneysHelperSpec extends AnyFunSpec
     it("Handle values when canbus fields are missing") {
       val sourceDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3}""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
@@ -1101,28 +1083,28 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:01"
             |, "state_changed":0, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:02"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:03"
             |, "state_changed":0, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"ignition":false, "attributes":{"deviceId":1}
+          """{"ignition":false,"device_id":1
             |, "timestamp":"2022-02-01 00:00:04"
             |, "state_changed":0, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
@@ -1140,12 +1122,7 @@ class JourneysHelperSpec extends AnyFunSpec
   describe("aggregateStateChangeValues") {
     val source_schema = StructType(
       Array(
-        StructField("attributes", StructType(
-          Array(
-            StructField("deviceId", IntegerType, nullable = false)
-          )
-        ), nullable = false
-        )
+         StructField("device_id", LongType, nullable = false)
         , StructField("state_changed_group", LongType, nullable = false)
         , StructField("start_timestamp", TimestampType, nullable = false)
         , StructField("start_location_address", StringType, nullable = false)
@@ -1162,7 +1139,7 @@ class JourneysHelperSpec extends AnyFunSpec
     val expected_schema = StructType(
       Array(
         StructField("id", StringType, nullable = false)
-        , StructField("deviceId", LongType, nullable = false)
+        , StructField("device_id", LongType, nullable = false)
         , StructField("start_timestamp", TimestampType, nullable = false)
         , StructField("start_location_address", StringType, nullable = false)
         , StructField("start_location_latitude", DoubleType, nullable = false)
@@ -1180,25 +1157,25 @@ class JourneysHelperSpec extends AnyFunSpec
     it("Aggregates values of the different StateChange of a device") {
       val sourceDF = jsonToDF(
         List(
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
@@ -1210,18 +1187,18 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"id":"a", "deviceId":1
+          """{"id":"a", "device_id":1
             |, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"id":"b","deviceId":1
+          """{"id":"b","device_id":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10, "label":"" }""".stripMargin
           ,
-          """{"id":"c","deviceId":1
+          """{"id":"c","device_id":1
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
             |, "distance":0, "consumption":0, "label":"" }""".stripMargin
@@ -1236,49 +1213,49 @@ class JourneysHelperSpec extends AnyFunSpec
     it("Aggregates values of the different StateChange of two devices") {
       val sourceDF = jsonToDF(
         List(
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":2}
+          """{"device_id":2
             |, "state_changed_group":0
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":90, "consumption":9 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":2}
+          """{"device_id":2
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":50, "consumption":5 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":2}
+          """{"device_id":2
             |, "state_changed_group":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":150, "consumption":15 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":1}
+          """{"device_id":1
             |, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
             |, "distance":0, "consumption":0 }""".stripMargin
           ,
-          """{"attributes":{"deviceId":2}
+          """{"device_id":2
             |, "state_changed_group":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
@@ -1290,32 +1267,32 @@ class JourneysHelperSpec extends AnyFunSpec
 
       val expectedDF = jsonToDF(
         List(
-          """{"id":"a", "deviceId":1
+          """{"id":"a", "device_id":1
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"id":"b","deviceId":2
+          """{"id":"b","device_id":2
             |, "start_timestamp":"2022-02-01 00:00:01", "start_location_address":"address1", "start_location_latitude":1.1, "start_location_longitude":2.1
             |, "end_timestamp":"2022-02-01 00:00:01", "end_location_address":"address1", "end_location_latitude":1.1, "end_location_longitude":2.1
             |, "distance":90, "consumption":9, "label":"" }""".stripMargin
           ,
-          """{"id":"c","deviceId":1
+          """{"id":"c","device_id":1
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":100, "consumption":10, "label":"" }""".stripMargin
           ,
-          """{"id":"d", "deviceId":2
+          """{"id":"d", "device_id":2
             |, "start_timestamp":"2022-02-01 00:00:02", "start_location_address":"address2", "start_location_latitude":1.2, "start_location_longitude":2.2
             |, "end_timestamp":"2022-02-01 00:00:03", "end_location_address":"address3", "end_location_latitude":1.3, "end_location_longitude":2.3
             |, "distance":200, "consumption":20, "label":"" }""".stripMargin
           ,
-          """{"id":"e", "deviceId":1
+          """{"id":"e", "device_id":1
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
             |, "distance":0, "consumption":0, "label":"" }""".stripMargin
           ,
-          """{"id":"f", "deviceId":2
+          """{"id":"f", "device_id":2
             |, "start_timestamp":"2022-02-01 00:00:04", "start_location_address":"address4", "start_location_latitude":1.4, "start_location_longitude":2.4
             |, "end_timestamp":"2022-02-01 00:00:04", "end_location_address":"address4", "end_location_latitude":1.4, "end_location_longitude":2.4
             |, "distance":100, "consumption":10, "label":"" }""".stripMargin
@@ -1331,7 +1308,7 @@ class JourneysHelperSpec extends AnyFunSpec
   describe("calculateJourneys") {
     it("If ignition changes from on and off a journey is created") {
       val expectedDF = jsonToDF(List(
-        s"""{"id":"${UUID.randomUUID().toString}", "deviceId":1328414834680696832
+        s"""{"id":"${UUID.randomUUID().toString}", "device_id":1328414834680696832
            |,"start_timestamp":"2023-02-05 10:55:27" ,"start_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1"
            |,"start_location_latitude":40.605957 ,"start_location_longitude":-3.711923
            |,"end_timestamp":"2023-02-05 10:57:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3"
@@ -1396,7 +1373,7 @@ class JourneysHelperSpec extends AnyFunSpec
 
     it("If ignition just on, a journey is created") {
       val expectedDF = jsonToDF(List(
-        s"""{"id":"${UUID.randomUUID().toString}", "deviceId":1328414834680696832
+        s"""{"id":"${UUID.randomUUID().toString}", "device_id":1328414834680696832
            |,"start_timestamp":"2023-02-05 10:54:27" ,"start_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
            |,"start_location_latitude":40.605956 ,"start_location_longitude":-3.711923
            |,"end_timestamp":"2023-02-05 10:58:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a4"

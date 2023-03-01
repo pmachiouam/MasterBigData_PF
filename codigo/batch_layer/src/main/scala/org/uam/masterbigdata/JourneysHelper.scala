@@ -2,10 +2,8 @@ package org.uam.masterbigdata
 
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{coalesce, col, expr, first, lag, last, least, lit, sum, when}
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.functions.{coalesce, col, expr, first, lag, last, lit, sum, when}
 
-import scala.util.Try
 
 object JourneysHelper {
 
@@ -13,29 +11,28 @@ object JourneysHelper {
   def calculateJourneys()(df: DataFrame): DataFrame = {
     df.transform(flatMainFields())
       .transform(setIgnitionStateChange())
+      .where(col("ignition") =!= false)
       .transform(setGroupOfStateChangesToFrames())
       .transform(setInitialStateChangeValues())
       .transform(setFinalStateChangeValues())
-      .where(col("ignition") =!= false)
       .transform(setCountersValues())
       .transform(aggregateStateChangeValues())
-    //añadir identificador creado por UUID
   }
 
   def flatMainFields()(df: DataFrame): DataFrame = {
-    df.transform(CommonTelemetryHelper.flatLocationsFields())
+    df.transform(CommonTelemetryHelper.flatBasicFields())
       .withColumn("ignition", col("ignition").getField("status"))
   }
 
   private val window_partition_by_deviceId_order_by_timestamp = Window
-    .partitionBy(col("attributes").getField("deviceId"))
+    .partitionBy(col("device_id"))
     .orderBy(col("timestamp"))
   private val window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp_unbound = Window
-    .partitionBy(col("attributes").getField("deviceId"), col("state_changed_group"))
+    .partitionBy(col("device_id"), col("state_changed_group"))
     .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     .orderBy(col("timestamp"))
   private val window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp = Window
-    .partitionBy(col("attributes").getField("deviceId"), col("state_changed_group"))
+    .partitionBy(col("device_id"), col("state_changed_group"))
     .orderBy(col("timestamp"))
 
 
@@ -125,7 +122,7 @@ object JourneysHelper {
   def aggregateStateChangeValues()(df: DataFrame): DataFrame = {
     df.select(
        col("state_changed_group")
-      , expr("cast( attributes.deviceId as long) as deviceId")
+      , col("device_id")
       , col("start_timestamp")
       , col("start_location_address")
       , col("start_location_latitude")
@@ -138,7 +135,7 @@ object JourneysHelper {
       , col("consumption")
     ).groupBy(
        col("state_changed_group")
-      , col("deviceId")
+      , col("device_id")
       , col("start_timestamp")
       , col("start_location_address")
       , col("start_location_latitude")
