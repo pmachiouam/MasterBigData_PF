@@ -11,8 +11,7 @@ object JourneysHelper {
 
 
   def calculateJourneys()(df: DataFrame): DataFrame = {
-    df.transform(DateHelper.convertToDate("timestamp", "timestamp"))
-      .transform(flatMainFields())
+    df.transform(flatMainFields())
       .transform(setIgnitionStateChange())
       .transform(setGroupOfStateChangesToFrames())
       .transform(setInitialStateChangeValues())
@@ -24,13 +23,8 @@ object JourneysHelper {
   }
 
   def flatMainFields()(df: DataFrame): DataFrame = {
-    df.withColumn("location_address", col("gnss").getField("address"))
-      .withColumn("location_latitude", col("gnss").getField("coordinate").getField("lat"))
-      .withColumn("location_longitude", col("gnss").getField("coordinate").getField("lng"))
-      .drop(col("gnss"))
-      .withColumn("_ignition", col("ignition").getField("status"))
-      .drop(col("ignition").getField("status")).drop("ignition")
-      .withColumnRenamed("_ignition", "ignition")
+    df.transform(CommonTelemetryHelper.flatLocationsFields())
+      .withColumn("ignition", col("ignition").getField("status"))
   }
 
   private val window_partition_by_deviceId_order_by_timestamp = Window

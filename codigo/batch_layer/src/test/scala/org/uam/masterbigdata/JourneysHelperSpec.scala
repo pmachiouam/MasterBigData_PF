@@ -337,18 +337,27 @@ class JourneysHelperSpec extends AnyFunSpec
 
     val expected_schema: StructType = StructType(
       Array(
-        StructField("timestamp", StringType, nullable = false)
+        StructField("timestamp", TimestampType, nullable = false)
+        ,StructField("gnss", StructType(
+          Array(
+            StructField("type", StringType, nullable = false)
+            , StructField("altitude", DoubleType)
+            , StructField("speed", IntegerType)
+            , StructField("course", IntegerType)
+            , StructField("satellites", IntegerType)
+          )
+        ))
+        , StructField("ignition", BooleanType, nullable = false)
         , StructField("location_address", StringType, nullable = false)
         , StructField("location_latitude", DoubleType, nullable = false)
         , StructField("location_longitude", DoubleType, nullable = false)
-        , StructField("ignition", BooleanType, nullable = false)
       )
     )
 
     it("Flats the main fields for the journeys analisis") {
       val sourceDF = jsonToDF(
         List(
-          """{"timestamp":"2023-02-05 10:58:27"
+          """{"timestamp":"2023-02-05T10:58:27Z"
             |,"gnss":{
             |          "type":"Gps"
             |          ,"coordinate":{
@@ -370,10 +379,17 @@ class JourneysHelperSpec extends AnyFunSpec
       val expectedDF = jsonToDF(
         List(
           """{"timestamp":"2023-02-05 10:58:27"
+            |,"gnss":{
+            |          "type":"Gps"
+            |          ,"altitude":722.0
+            |          ,"speed":0
+            |          ,"course":212
+            |          ,"satellites":13
+            |          }
+            |,"ignition":false
             |,"location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
             |,"location_latitude":40.605956
-            |,"location_longitude":-3.711923
-            |,"ignition":false}""".stripMargin
+            |,"location_longitude":-3.711923}""".stripMargin
         )
         , expected_schema)
 
