@@ -64,7 +64,7 @@ class EventsHelperSpec extends AnyFunSpec
 
       val expectedDF: DataFrame = jsonToDF(
         List(
-          """{"id":1, "device_id":1440702360799186944, "created":"2023-02-23 11:22:50", "type_id":1, "location_address":"Dirección de prueba", "location_latitude":18.444129, "location_longitude":-69.255797, "value":"20%" }"""
+          """{"id":"1", "device_id":1440702360799186944, "created":"2023-02-23 11:22:50", "type_id":1, "location_address":"Dirección de prueba", "location_latitude":18.444129, "location_longitude":-69.255797, "value":"20%" }"""
         )
         , event_schema
       )
@@ -99,7 +99,7 @@ class EventsHelperSpec extends AnyFunSpec
 
       val expectedDF: DataFrame = jsonToDF(
         List(
-          """{"id":1, "device_id":1440702360799186944, "created":"2023-02-23 11:22:50", "type_id":1, "location_address":"Dirección de prueba", "location_latitude":18.444129, "location_longitude":-69.255797, "value":"21%" }"""
+          """{"id":"1", "device_id":1440702360799186944, "created":"2023-02-23 11:22:50", "type_id":1, "location_address":"Dirección de prueba", "location_latitude":18.444129, "location_longitude":-69.255797, "value":"21%" }"""
         )
         , event_schema
       )

@@ -25,7 +25,7 @@ CREATE DATABASE tracking;
 \echo 'Creando la base de datos '
 CREATE TABLE public.journeys (
     id uuid NOT NULL,
-	device_id int8 NOT NULL,
+	  device_id int8 NOT NULL,
     start_timestamp timestamp NOT NULL,
     start_location_address text NOT NULL,
     start_location_latitude float NOT NULL,
@@ -35,7 +35,8 @@ CREATE TABLE public.journeys (
     end_location_latitude float NULL,
     end_location_longitude float NULL,
     distance int8 NULL,
-	label text NULL
+    consumption int8 NULL,
+	  label text NULL
 );  
 comment on column journeys.id is 'Identificador del trayecto'; 
 comment on column journeys.device_id is 'Identificador del dispositivo que realiza el trayecto';
@@ -48,6 +49,8 @@ comment on column journeys.end_location_address is 'Dirección de la localizaci�
 comment on column journeys.end_location_latitude is 'Latitud de la localización del final de trayecto. Solo se establece si está terminado el trayecto';
 comment on column journeys.end_location_longitude is 'Longitud de la localización del final de trayecto. Solo se establece si está terminado el trayecto';
 comment on column journeys.distance is 'Distancia recorrida en metros. Solo se establece si está terminado el trayecto';
+comment on column journeys.consumption is 'Consumo realizado en trayecto en litros. Solo se establece si está terminado el trayecto';
+comment on column journeys.label is 'Etiqueta asociada al trayecto que permite identificar trayectos con el mismo inicio y fin (location_latitude, location_longitude)';
 
 CREATE TABLE public.frames (
 	id int8 NOT NULL,
@@ -80,7 +83,7 @@ comment on column frames.location_course is 'Dirección en grados de la localiza
 comment on column frames.ignition is 'Si la trama contiene el estado de la llave de contacto del vehículo';
 
 CREATE TABLE public.events (
-	id int8 NOT NULL,
+	id uuid NOT NULL,
 	device_id int8 NOT NULL,
 	created timestamp NOT NULL,
 	type_id int8 NOT NULL,

@@ -19,5 +19,13 @@ class DateHelperSpec extends AnyFunSpec with SparkSessionTestWrapper with Column
 
      assertColumnEquality(rest, "expected", "current")
    }
+   it("Convierte una cadena de texto con milisegundos en formato de fecha común") {
+
+     val df = Seq(
+       ("2023-02-05T13:15:18.01Z", new Timestamp(1675599318010L))
+     ).toDF("date", "expected")
+     val rest = df.transform(DateHelper.convertToDate("date", "current"))
+     assertColumnEquality(rest, "expected", "current")
+   }
  }
 }

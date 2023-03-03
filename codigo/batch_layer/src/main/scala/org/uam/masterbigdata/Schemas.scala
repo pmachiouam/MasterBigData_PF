@@ -201,7 +201,7 @@ trait Schemas {
 
   val event_schema:StructType = StructType(
     Array(
-      StructField("id", LongType, nullable = false)
+      StructField("id", StringType, nullable = false)
       , StructField("device_id", LongType, nullable = false)
       , StructField("created", TimestampType, nullable = false)
       , StructField("type_id", LongType, nullable = false)

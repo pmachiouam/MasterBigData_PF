@@ -7,4 +7,4 @@ echo "\\h		: help with SQL commands"
 echo "\\?		: help with psql commands"
 echo "\\q		: quit"
 echo "=================================================================="
-docker exec -it postgres psql -U docker -d tracking
+docker exec -it entorno_postgres_1 psql -U docker -d tracking

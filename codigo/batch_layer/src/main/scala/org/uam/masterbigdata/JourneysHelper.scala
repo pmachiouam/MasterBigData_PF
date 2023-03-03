@@ -9,7 +9,15 @@ object JourneysHelper {
 
 
   def calculateJourneys()(df: DataFrame): DataFrame = {
-    df.transform(flatMainFields())
+    df.where(col("gnss").getField("coordinate").isNotNull)
+      .select(
+        col("attributes")
+        ,col("timestamp")
+        ,col("gnss")
+        ,col("can")
+        ,col("ignition")
+      )
+      .transform(flatMainFields())
       .transform(setIgnitionStateChange())
       .where(col("ignition") =!= false)
       .transform(setGroupOfStateChangesToFrames())

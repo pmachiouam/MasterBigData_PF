@@ -19,6 +19,5 @@ lazy val sandbox = (project in file("sandbox"))
   .settings(libraryDependencies++=SandboxDependencies.production)
   .settings(libraryDependencies ++= SandboxDependencies.test)
 
-testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oI")
 
 

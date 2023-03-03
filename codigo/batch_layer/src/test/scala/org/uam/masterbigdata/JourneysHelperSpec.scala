@@ -1490,6 +1490,70 @@ class JourneysHelperSpec extends AnyFunSpec
 
       assert(actualDF.count() === 0L)
     }
+
+    it("If there is no coordinates no journey is created") {
+      val expectedDF = jsonToDF(List(
+        s"""{"id":"${UUID.randomUUID().toString}", "device_id":1328414834680696832
+           |,"start_timestamp":"2023-02-05 10:54:27" ,"start_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a"
+           |,"start_location_latitude":40.605956 ,"start_location_longitude":-3.711923
+           |,"end_timestamp":"2023-02-05 10:58:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a4"
+           |,"end_location_latitude":40.605956, "end_location_longitude":-3.711923
+           |,"distance":0, "consumption":0 ,"label":""}""".stripMargin
+      ), journey_schema)
+
+      val sourceDF = jsonToDF(
+        List(
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:54:27Z"
+              , "server": {"timestamp": "2023-02-05T10:54:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:55:27Z"
+              , "server": {"timestamp": "2023-02-05T10:55:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": { "type": "Gps",  "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:56:27Z"
+              , "server": {"timestamp": "2023-02-05T10:56:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:57:27Z"
+              , "server": {"timestamp": "2023-02-05T10:57:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": true}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:58:27Z"
+              , "server": { "timestamp": "2023-02-05T10:58:28.808Z"}
+              , "attributes": { "tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC" }
+              , "gnss": { "type": "Gps", "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a4", "precision": "Ideal", "satellites": 13 }
+              , "ignition": { "status": true } }"""
+        )
+        , telemetry_schema)
+
+      val actualDF = JourneysHelper.calculateJourneys()(sourceDF)
+
+      assert(0 === actualDF.count())
+    }
   }
 
 }

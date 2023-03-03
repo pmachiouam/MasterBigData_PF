@@ -3,8 +3,8 @@ import sbt._
 
 object BatchDependencies {
   val production: List[ModuleID] =
-    "org.apache.spark" %% "spark-core" % CommonVersion.sparkVersion :://% "provided" ::
-    "org.apache.spark" %% "spark-sql" % CommonVersion.sparkVersion :://% "provided" ::
+    "org.apache.spark" %% "spark-core" % CommonVersion.sparkVersion % "provided" ::
+    "org.apache.spark" %% "spark-sql" % CommonVersion.sparkVersion  % "provided" ::
     "org.postgresql" % "postgresql" % CommonVersion.postgres :: Nil
 
   //https://github.com/MrPowers/spark-fast-tests
