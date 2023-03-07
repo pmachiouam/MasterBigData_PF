@@ -151,6 +151,7 @@ trait Schemas {
                   StructField("volume", LongType)
                 )
               ))
+              ,StructField("level", IntegerType)
             )
           ))
         )

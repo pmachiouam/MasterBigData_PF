@@ -1,7 +1,7 @@
 package org.uam.masterbigdata
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, expr, lit, udf }
+import org.apache.spark.sql.functions.{col, expr, lit}
 object EventsHelper {
   /** Creates a event based on the abusive throttle use (more than 20%) */
   def createExcessiveThrottleEvent()(df: DataFrame): DataFrame = {
@@ -10,7 +10,6 @@ object EventsHelper {
       .withColumn("value", expr("concat( cast( can.vehicle.pedals.throttle.level as string ), '%' )" ))
       .select(
         expr("uuid()").as("id")
-        //monotonically_increasing_id().as("id")
         , col("device_id")
         , col("timestamp").as("created")
         , lit(1L).as("type_id")
@@ -19,7 +18,10 @@ object EventsHelper {
         , col("location_longitude")
         , col("value")
       )
+  }
 
+  def createFuelStealingEvent()(df:DataFrame):DataFrame = {
+    ???
   }
 
 }
