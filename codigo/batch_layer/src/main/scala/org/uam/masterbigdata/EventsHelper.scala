@@ -27,8 +27,11 @@ object EventsHelper {
   }
 
   case class FuelStealingEventData(device_id: Long, timestamp: Timestamp, location_address: String, location_latitude: Double, location_longitude: Double, fuel_level: Int)
-  case class  FuelStealingEventState(device_id: Long, timestamp: Timestamp, location_address: String, location_latitude: Double, location_longitude: Double, fuel_level: Int)
-  case class  FuelStealingEventResponse(device_id: Long, timestamp: Timestamp, location_address: String, location_latitude: Double, location_longitude: Double, fuel_level_diff: Int)
+
+  case class FuelStealingEventState(device_id: Long, timestamp: Timestamp, location_address: String, location_latitude: Double, location_longitude: Double, fuel_level: Int)
+
+  case class FuelStealingEventResponse(device_id: Long, timestamp: Timestamp, location_address: String, location_latitude: Double, location_longitude: Double, fuel_level_diff: Int)
+
   def createFuelStealingEvent()(df: DataFrame): DataFrame = {
 
     df.transform(CommonTelemetryHelper.flatBasicFields())
@@ -46,7 +49,7 @@ object EventsHelper {
       //aplicar groupByKey(deviceId)
       .groupByKey(_.device_id)(Encoders.scalaLong)
       //aplicar el procesamiento por estado
-      .flatMapGroupsWithState(OutputMode.Append(),GroupStateTimeout.NoTimeout())(updateFuelStealingEvent)(Encoders.product[List[FuelStealingEventState]],Encoders.product[FuelStealingEventResponse])
+      .flatMapGroupsWithState(OutputMode.Append(), GroupStateTimeout.NoTimeout())(updateFuelStealingEvent)(Encoders.product[List[FuelStealingEventState]], Encoders.product[FuelStealingEventResponse])
       //Crear el evento
       .toDF()
       .select(
@@ -57,16 +60,16 @@ object EventsHelper {
         , col("location_address")
         , col("location_latitude")
         , col("location_longitude")
-        , lit("5% in less or 5 minutes").as("value")//sustituir
+        , lit("5% in less or 5 minutes").as("value") //sustituir
       )
   }
 
   private def updateFuelStealingEvent(
-                            deviceId: Long, // the key by which the grouping was made
-                            group: Iterator[FuelStealingEventData], // a batch of data associated to the key
-                            state: GroupState[List[FuelStealingEventState]] // like an "option", I have to manage manually
-                          ): Iterator[FuelStealingEventResponse] = {
-    group.flatMap{
+                                       deviceId: Long, // the key by which the grouping was made
+                                       group: Iterator[FuelStealingEventData], // a batch of data associated to the key
+                                       state: GroupState[List[FuelStealingEventState]] // like an "option", I have to manage manually
+                                     ): Iterator[FuelStealingEventResponse] = {
+    group.flatMap {
       //mantenemos varios estados en una pila
       //si el estado nuevo en entrar es superior a los almacenados en 5 minutos comparamos el nivel,
       //si es mayor 5 % lanzamos alerta sino, nada
@@ -76,51 +79,39 @@ object EventsHelper {
     }
   }
 
-  def checkFuelStealing(data:FuelStealingEventData, states:List[FuelStealingEventState]):(List[FuelStealingEventState], FuelStealingEventResponse) = {
-    println(states)
-
-    if(states.length == 0) {
+  /**Si los eventos no están ordenados correctamente en el tiempo no funcionará bien*/
+  def checkFuelStealing(data: FuelStealingEventData, states: List[FuelStealingEventState]): (List[FuelStealingEventState], FuelStealingEventResponse) = {
+    if (states.length == 0) {
       (states :+ FuelStealingEventState(data.device_id, data.timestamp, data.location_address, data.location_latitude, data.location_longitude, data.fuel_level)
         , null)
-    }else{
+    } else {
       @tailrec
-      def go(currentStates:List[FuelStealingEventState], result:(List[FuelStealingEventState], FuelStealingEventResponse)):(List[FuelStealingEventState], FuelStealingEventResponse) = {
-        /*debug*/
-        println(currentStates)
-        println(result._1)
-
-        if(currentStates.isEmpty){
-          /*debug*/
-          println(result._1)
-          result
-        }
-        else if( (data.timestamp.getTime - currentStates.head.timestamp.getTime) >= 5 * 60000){
-          if (data.fuel_level - currentStates.head.fuel_level >= 5) {
-            /*debug*/
-            val tempRes = (result._1 :+ fuelStealingEventDataToState(data)
-              , FuelStealingEventResponse(data.device_id, data.timestamp, data.location_address, data.location_latitude, data.location_longitude, data.fuel_level - currentStates.head.fuel_level))
-            println(tempRes)
-            tempRes
+      def go(currentStates: List[FuelStealingEventState], result: (List[FuelStealingEventState], FuelStealingEventResponse)): (List[FuelStealingEventState], FuelStealingEventResponse) = {
+        if (currentStates.isEmpty)
+          ( fuelStealingEventDataToState(data) :: result._1
+            , result._2)
+        else {
+          if ((data.timestamp.getTime - currentStates.head.timestamp.getTime) >= 5 * 60000) {
+            if (currentStates.head.fuel_level - data.fuel_level >= 5) (fuelStealingEventDataToState(data) :: result._1
+              , FuelStealingEventResponse(data.device_id, data.timestamp, data.location_address, data.location_latitude, data.location_longitude, currentStates.head.fuel_level - data.fuel_level))
+            else (fuelStealingEventDataToState(data) :: result._1
+              , null)
           }
-          else{
-            /*Debug*/
-            val tempRes = (result._1 :+ currentStates.head, null)
-            println(tempRes)
-            tempRes
-          }
+          else go(
+            currentStates.tail
+            ,(result._1 :+ currentStates.head
+              , null)
+          )
         }
-        else go(
-          currentStates.tail, (result._1 :+ currentStates.head, null)
-        )
       }
 
 
       go(
-        states.tail, (List(states.head), null)
+        states, (List(), null)
       )
     }
   }
 
-  private def fuelStealingEventDataToState(data:FuelStealingEventData):FuelStealingEventState =
+  private def fuelStealingEventDataToState(data: FuelStealingEventData): FuelStealingEventState =
     FuelStealingEventState(data.device_id, data.timestamp, data.location_address, data.location_latitude, data.location_longitude, data.fuel_level)
 }
