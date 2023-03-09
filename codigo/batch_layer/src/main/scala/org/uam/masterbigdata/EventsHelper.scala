@@ -70,12 +70,20 @@ object EventsHelper {
                                        state: GroupState[List[FuelStealingEventState]] // like an "option", I have to manage manually
                                      ): Iterator[FuelStealingEventResponse] = {
     group.flatMap {
-      //mantenemos varios estados en una pila
-      //si el estado nuevo en entrar es superior a los almacenados en 5 minutos comparamos el nivel,
-      //si es mayor 5 % lanzamos alerta sino, nada
-      //descartamos el estado antiguo de la lista
+      record =>
+      val states =
+        if (state.exists) state.get
+        else List()
 
-      record => Iterator()
+      val result = checkFuelStealing(record, states)
+
+      state.update(result._1)
+
+      if(null != result._2) {
+        Iterator(result._2)
+      }else{
+        Iterator()
+      }
     }
   }
 
