@@ -1,39 +1,37 @@
 package org.uam.masterbigdata.drivers
 
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.{OutputMode, StreamingQuery}
 import org.apache.spark.sql.types.StringType
-import org.uam.masterbigdata.{CommonTelemetryHelper, EventsHelper, Schemas}
+import org.uam.masterbigdata.{EventsHelper, Schemas}
 
-object StreamDriver extends Schemas {
-  val spark = SparkSession
+import java.sql.Timestamp
+
+object StreamDriver extends Schemas with DatabaseWriter {
+  case class Event(id: String, device_id: Long, created: Timestamp, type_id: Long, location_address: String, location_latitude: Double, location_longitude: Double, value: String)
+
+  val spark: SparkSession = SparkSession
     .builder()
     //quitar al hacer submit
     .master("local[*]")
     .appName("Streaming")
     .getOrCreate()
 
-  def createStreamEvents(): Unit = {
-    val streamDF: DataFrame = loadKafkaStrean()
+  private def createStreamEvents(): Unit = {
+    val streamDF: DataFrame = loadKafkaStream()
 
-    val telemetryFromSocketDF = streamDF.select(from_json(col("value"), telemetry_schema).as("json"))
+    val eventsDF = streamDF.select(from_json(col("value"), telemetry_schema).as("json"))
       .selectExpr("json.*")
-
-    val query: StreamingQuery = telemetryFromSocketDF
       .transform(EventsHelper.createFuelStealingEvent())
-      .writeStream
-      .outputMode(OutputMode.Append())
-      .format("console")
-      .start()
 
+    val query: StreamingQuery = writeEventStreamIntoPostgres(eventsDF)
     query.awaitTermination()
 
   }
 
 
-  private def loadKafkaStrean(): DataFrame = spark.readStream
+  private def loadKafkaStream(): DataFrame = spark.readStream
     .format("kafka")
     .options(
       Map(
@@ -53,6 +51,29 @@ object StreamDriver extends Schemas {
       )
     )
     .load()
+
+  private def writeEventStreamIntoConsole(eventDF:DataFrame) = {
+      eventDF
+      .writeStream
+      .outputMode(OutputMode.Append())
+      .format("console")
+      .start()
+  }
+  private def writeEventStreamIntoPostgres(eventDF: DataFrame): StreamingQuery = {
+    eventDF.as[Event](Encoders.product[Event])
+      .writeStream.foreachBatch(
+      (batch: Dataset[Event], _: Long) => batch.write
+        .format("jdbc")
+        .mode(SaveMode.Append)
+        .options(
+          props
+        )
+        .option("dbtable", s"public.Events")
+        .save()
+    )
+      .start()
+
+  }
 
   def main(args: Array[String]): Unit = {
     createStreamEvents()
