@@ -1,0 +1,7 @@
+package miscelanea
+
+
+
+object httpKafkaProducer {
+
+}

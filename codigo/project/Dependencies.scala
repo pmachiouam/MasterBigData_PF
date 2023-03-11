@@ -23,5 +23,6 @@ object Dependencies {
     val sparkVersion = "3.2.3"
     val sparkFastTests = "1.3.0"
     val sparkDaria = "1.2.3"
+    val tapir = "0.12.21"
   }
 }

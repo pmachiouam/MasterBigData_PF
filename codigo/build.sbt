@@ -13,10 +13,15 @@ lazy val web = (project in file("web"))
   .settings(name := "web")
   .settings(libraryDependencies ++= WebDependencies.production)
 
+lazy val kafkaProducer = (project in file("kafka_producer"))
+  .settings(name := "Kafka_producer")
+  .settings(libraryDependencies ++= KafkaProducerDependencies.production)
+
+
 //Para trastear
 lazy val sandbox = (project in file("sandbox"))
   .settings(name := "sandbox")
-  .settings(libraryDependencies++=SandboxDependencies.production)
+  .settings(libraryDependencies ++= SandboxDependencies.production)
   .settings(libraryDependencies ++= SandboxDependencies.test)
 
 

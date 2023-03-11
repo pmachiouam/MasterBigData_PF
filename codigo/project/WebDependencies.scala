@@ -5,13 +5,13 @@ object WebDependencies {
   val production: Seq[ModuleID] = Seq(
 
     // T A P I R
-    "com.softwaremill.sttp.tapir" %% "tapir-core" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-sttp-client" % Version.tapir,
-    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % Version.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-core" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-sttp-client" % CommonVersion.tapir,
+    "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-akka-http" % CommonVersion.tapir,
 
     // J S O N  L I B S
     "io.circe" %% "circe-optics" % CommonVersion.circe,
@@ -38,7 +38,6 @@ object WebDependencies {
 
 
   object Version {
-    val tapir = "0.12.21"
     val encoder = "6.3"
   }
 }
