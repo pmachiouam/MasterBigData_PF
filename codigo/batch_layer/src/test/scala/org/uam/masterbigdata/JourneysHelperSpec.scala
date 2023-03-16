@@ -1564,7 +1564,7 @@ class JourneysHelperSpec extends AnyFunSpec
            |,"start_location_latitude":40.605957 ,"start_location_longitude":-3.711923
            |,"end_timestamp":"2023-02-05 10:57:27" ,"end_location_address":"Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3"
            |,"end_location_latitude":40.605959, "end_location_longitude":-3.711921
-           |,"distance":0, "consumption":0 ,"label":""}""".stripMargin
+           |,"distance":0, "consumption":0 ,"label":"unknown"}""".stripMargin
       ), journey_schema)
 
       val sourceDF = jsonToDF(

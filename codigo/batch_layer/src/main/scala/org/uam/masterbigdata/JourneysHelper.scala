@@ -5,7 +5,7 @@ import org.apache.spark.ml.functions.vector_to_array
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{coalesce, col, explode, expr, first, lag, last, lit, sum, when, round, array}
+import org.apache.spark.sql.functions.{coalesce, col, explode, expr, first, array_max, lag, last, lit, round, sum, when}
 
 
 
@@ -28,23 +28,22 @@ object JourneysHelper {
       .setOutputCol("label_original")
       .setLabels(stringIndexerModel.labelsArray(0))
 
-    //tempDF.withColumn("probabilities", explode(col("probability"))).show()
-    tempDF.select(vector_to_array(col("probability")).as("probability_arr"))
-      .select(explode(col("probability_arr")).as("probability"))
-      .select(round(col("probability"), 3)).show()
-
+    //convertimos los indices de las etiquetas a texto y nos quedamos solo con los campos de journeys.
+    //si no hay etiqueta alguna que supere la probabilidad de 0.9 entonces establecemos la etiqueta como unknown
     converter
       .transform(tempDF)
       .select(col("id"), col("device_id"), col("start_timestamp"), col("start_location_address")
       ,col("start_location_latitude"), col("start_location_longitude"), col("end_timestamp")
       ,col("end_location_address"), col("end_location_latitude"), col("end_location_longitude")
       ,col("distance"), col("consumption")
-        //evaluar label_original con una función de ususario UDF por si la probabilidad no es superior a 0.8 no poner unknown
-        /**when(
-          col("probability").
+       , when(
+          array_max(vector_to_array(col("probability") , "float64")) >= lit(0.90)
+          , col("label_original")
         )
-        */
-        ,col("label_original")
+          .otherwise(lit("unknown")).as("label_original")
+
+
+        //,col("label_original")
       )
       //.drop("label", "label_ind", "features", "rawPrediction", "probability", "prediction")
       .withColumnRenamed("label_original", "label")
