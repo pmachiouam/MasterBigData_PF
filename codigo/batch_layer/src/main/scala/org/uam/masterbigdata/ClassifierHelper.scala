@@ -3,10 +3,10 @@ package org.uam.masterbigdata
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorAssembler}
 import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionModel}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.tuning.CrossValidator
 import org.apache.spark.ml.tuning.ParamGridBuilder
 
@@ -35,52 +35,69 @@ object ClassifierHelper extends Schemas{
   }
 
   //Crear el pipeline y guardarlo.
-  def journeysClassification_LogReg(journeysToLearnFrom:DataFrame) = {
+  def journeysClassification_LogReg(path:String, journeysToLearnFrom:DataFrame):Unit = {
     val stringIndexer = new StringIndexer()
-    stringIndexer.setInputCol("label")
-    stringIndexer.setOutputCol("label_ind")
-    //val journeysToLearnFrom_ind_tr = stringIndexer.fit(journeysToLearnFrom)
-    //val journeysToLearnFrom_ind = journeysToLearnFrom_ind_tr.transform(journeysToLearnFrom)
+    .setInputCol("label")
+    .setOutputCol("label_ind")
+    .setHandleInvalid("keep")
 
-     val vectorAssembler:VectorAssembler = new VectorAssembler()
-    vectorAssembler.setInputCols(Array("start_location_latitude", "start_location_longitude", "end_location_latitude", "end_location_longitude"))
-    vectorAssembler.setOutputCol("features")
-    //val dataML = vectorAssembler.transform(journeysToLearnFrom_ind)
+    val vectorAssembler:VectorAssembler = new VectorAssembler()
+    .setInputCols(Array("start_location_latitude", "start_location_longitude", "end_location_latitude", "end_location_longitude"))
+    .setOutputCol("features")
 
-    //Separación de los datos para entrenar
     val dataML_split = journeysToLearnFrom.randomSplit(Array(0.7, 0.3))
+    println(s"Total train data: ${dataML_split(0).count()}")
+    println(s"Total test data: ${dataML_split(1).count()}")
 
     val logisticRegression = new LogisticRegression()
-    logisticRegression.setFeaturesCol("features")
-    logisticRegression.setLabelCol("label_ind")
-    logisticRegression.setRegParam(0.01)
+    .setFeaturesCol("features")
+    .setLabelCol("label_ind")
+    //.setRegParam(0.01)
 
-
+  /**
+   * Pipeline
+   * */
     val pipeline = new Pipeline()
     pipeline.setStages(Array(stringIndexer, vectorAssembler, logisticRegression))
-    val pipeline_tr = pipeline.fit(dataML_split(0))
-    val pred_pipeline = pipeline_tr.transform(dataML_split(1))
 
-    //val logisticRegression_tr:LogisticRegressionModel = logisticRegression.fit(dataML_split(0))
-
-    //println(s"Accuracy ${logisticRegression_tr.summary.accuracy}")
-
-    //val pred_logisticRegression:DataFrame = logisticRegression_tr.transform(dataML_split(1))
-
-    //pred_logisticRegression.show()
+    /**
+     * Ajuste de hiperparámetros
+     * */
+      val paramGrid = new ParamGridBuilder()
+        .addGrid(logisticRegression.regParam, Array(0.1, 0.01, 0.001))
+        .addGrid(logisticRegression.maxIter, Array(10, 20, 30))
+        .build()
 
     val evaluator = new MulticlassClassificationEvaluator()
-    evaluator.setLabelCol("label_ind")
-    println(s"Test - F1 ${evaluator.evaluate(pred_pipeline)}")
-    evaluator.setMetricName("weightedPrecision")
-    println(s"Test - Precision ${evaluator.evaluate(pred_pipeline)}")
-    evaluator.setMetricName("weightedRecall")
-    println(s"Test - Recall ${evaluator.evaluate(pred_pipeline)}")
-    evaluator.setMetricName("accuracy")
-    println(s"Test - accuracy ${evaluator.evaluate(pred_pipeline)}")
+    .setLabelCol("label_ind")
 
-    //logisticRegression_tr
-    pred_pipeline
+    val crossValidator = new CrossValidator()
+      .setEvaluator(evaluator)
+      .setEstimator(pipeline)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(4)
+
+    val crossValidator_tr = crossValidator.fit(dataML_split(0))
+
+    //crossValidator_tr.avgMetrics.foreach(println)
+    //crossValidator_tr.getEstimatorParamMaps.foreach(println)
+
+    //evaluación de los datos de test
+    val bestPipelineModel = crossValidator_tr.bestModel.asInstanceOf[PipelineModel]
+    val pred_bestPipelineModel = bestPipelineModel.transform(dataML_split(1))
+
+
+    val cv_evaluator = crossValidator_tr.getEvaluator
+    println(s"Test - F1 ${cv_evaluator.evaluate(pred_bestPipelineModel)}")
+    evaluator.setMetricName("weightedPrecision")
+    println(s"Test - Precision ${cv_evaluator.evaluate(pred_bestPipelineModel)}")
+    evaluator.setMetricName("weightedRecall")
+    println(s"Test - Recall ${cv_evaluator.evaluate(pred_bestPipelineModel)}")
+    evaluator.setMetricName("accuracy")
+    println(s"Test - accuracy ${cv_evaluator.evaluate(pred_bestPipelineModel)}")
+
+
+    bestPipelineModel.write.overwrite().save(path)
   }
 
   //recuperar el pipeline

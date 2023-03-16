@@ -57,7 +57,7 @@ class ClassifierHelperSpec extends AnyFunSpec
     , journey_schema)
 
   describe("generateData") {
-    it("Just test") {
+    it("Generates new rows for a DataFrames of Journeys with small changes (111.1m) in the latitude and longitude fields") {
       val extendedDataFrame = ClassifierHelper.generateData(originalDataFrame)
 
      println(extendedDataFrame.count())
@@ -87,15 +87,15 @@ class ClassifierHelperSpec extends AnyFunSpec
       assert(0.001 > stddev_labelTC1_TC2.get(2).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC1_TC2.get(3).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC2_TC1.get(4).asInstanceOf[String].toDouble)
-        //Si queremos ver las estadísticas podemos podemos descomentarlo
+        //Si queremos ver las estadísticas podemos podemos descomentar
         //labelTC1_TC2_distribution.show()
     }
   }
 
   describe("journeysClassification_LogReg"){
-    it("testing"){
+    it("train"){
       val extendedDataFrame = ClassifierHelper.generateData(originalDataFrame)
-      ClassifierHelper.journeysClassification_LogReg(extendedDataFrame)
+      ClassifierHelper.journeysClassification_LogReg("../entorno/data/journeys_logreg_cv", extendedDataFrame)
     }
   }
 

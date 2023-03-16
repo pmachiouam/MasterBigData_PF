@@ -10,63 +10,6 @@ object TestingProject {
   def main(args: Array[String]):Unit = {
     val spark = SparkSession.builder().appName("Test Deploy App")
       .getOrCreate()
-    /*
-          val locationSchema: StructType = StructType(
-             Array(
-                 StructField("created", DateType, nullable = false)
-                , StructField("address", StringType)
-                , StructField("latitude", DoubleType, nullable = false)
-                , StructField("longitude", DoubleType, nullable = false)
-                , StructField("altitude", DoubleType)
-                , StructField("speed", FloatType)
-                , StructField("valid", BooleanType)
-                , StructField("course", FloatType)
-             )
-          )
-
-          val journeySchema:StructType = StructType(
-             Array(
-                 StructField("id", StringType, nullable = false)
-                ,StructField("device_id", LongType, nullable = false)
-                ,StructField("start_timestamp", DateType, nullable = false)
-                ,StructField("start_location_address", StringType)
-                ,StructField("start_location_latitude", DoubleType, nullable = false)
-                ,StructField("start_location_longitude", DoubleType, nullable = false)
-                ,StructField("end_timestamp", DateType)
-                ,StructField("end_location_address", StringType)
-                ,StructField("end_location_latitude", DoubleType)
-                ,StructField("end_location_longitude", DoubleType)
-                ,StructField("distance", LongType, nullable = false)
-             )
-          )
-
-
-
-
-          val framesSchema:StructType = StructType(
-             Array(
-                StructField("id", LongType, nullable = false)
-                ,StructField("device_id", LongType, nullable = false)
-                ,StructField("created", DateType, nullable = false)
-                ,StructField("received", DateType, nullable = false)
-                ,StructField("location", locationSchema)
-                ,StructField("ignition", BooleanType)
-             )
-          )
-
-          val eventSchema:StructType = StructType(
-             Array(
-                StructField("id", LongType, nullable = false)
-                , StructField("device_id", LongType, nullable = false)
-                , StructField("created", DateType, nullable = false)
-                , StructField("type_id", IntegerType, nullable = false)
-                , StructField("location_address", StringType)
-                , StructField("location_latitude", DoubleType, nullable = false)
-                , StructField("location_longitude", DoubleType, nullable = false)
-                , StructField("value", StringType)
-             )
-          )
-          */
 
     def testSaveJourney():Unit = {
       val rawJourneyData = Seq((

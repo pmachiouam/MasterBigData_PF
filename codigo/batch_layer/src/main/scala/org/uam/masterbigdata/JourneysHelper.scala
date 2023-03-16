@@ -1,21 +1,64 @@
 package org.uam.masterbigdata
 
+import org.apache.spark.ml.feature.{IndexToString, StringIndexerModel}
+import org.apache.spark.ml.functions.vector_to_array
+import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{coalesce, col, expr, first, lag, last, lit, sum, when}
+import org.apache.spark.sql.functions.{coalesce, col, explode, expr, first, lag, last, lit, sum, when, round, array}
+
 
 
 object JourneysHelper {
+  def calculateLabeledJourneys(path: String)(df: DataFrame): DataFrame = {
+    val journeysDF: DataFrame = df.transform(calculateJourneys())
+
+    val model = PipelineModel.load(path)
+    val tempDF = model.transform(journeysDF)
+    //para fines de depuración
+    //tempDF.show()
+
+    //recupera las relación de las etiquetas y su indices para poder reetiquetar
+    val stringIndexerModel: StringIndexerModel = model.stages
+      .filter(_.isInstanceOf[StringIndexerModel])
+      .map(_.asInstanceOf[StringIndexerModel]).apply(0)
+
+    val converter: IndexToString = new IndexToString()
+      .setInputCol("prediction")
+      .setOutputCol("label_original")
+      .setLabels(stringIndexerModel.labelsArray(0))
+
+    //tempDF.withColumn("probabilities", explode(col("probability"))).show()
+    tempDF.select(vector_to_array(col("probability")).as("probability_arr"))
+      .select(explode(col("probability_arr")).as("probability"))
+      .select(round(col("probability"), 3)).show()
+
+    converter
+      .transform(tempDF)
+      .select(col("id"), col("device_id"), col("start_timestamp"), col("start_location_address")
+      ,col("start_location_latitude"), col("start_location_longitude"), col("end_timestamp")
+      ,col("end_location_address"), col("end_location_latitude"), col("end_location_longitude")
+      ,col("distance"), col("consumption")
+        //evaluar label_original con una función de ususario UDF por si la probabilidad no es superior a 0.8 no poner unknown
+        /**when(
+          col("probability").
+        )
+        */
+        ,col("label_original")
+      )
+      //.drop("label", "label_ind", "features", "rawPrediction", "probability", "prediction")
+      .withColumnRenamed("label_original", "label")
+  }
 
 
   def calculateJourneys()(df: DataFrame): DataFrame = {
     df.where(col("gnss").getField("coordinate").isNotNull)
       .select(
         col("attributes")
-        ,col("timestamp")
-        ,col("gnss")
-        ,col("can")
-        ,col("ignition")
+        , col("timestamp")
+        , col("gnss")
+        , col("can")
+        , col("ignition")
       )
       .transform(flatMainFields())
       .transform(setIgnitionStateChange())
@@ -104,7 +147,7 @@ object JourneysHelper {
    * */
   def setCountersValues()(df: DataFrame): DataFrame = {
     val canbusDistanceCol: Column = col("can").getField("vehicle").getField("mileage").getField("distance")
-    val canbusDistanceColLag:Column = lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp)
+    val canbusDistanceColLag: Column = lag(canbusDistanceCol, 1).over(window_partition_by_deviceId_and_by_stateChangedGroup_order_by_timestamp)
     val canbusDistanceColValue: Column = canbusDistanceCol - coalesce(canbusDistanceColLag, canbusDistanceCol)
 
     val canbusConsumptionCol: Column = col("can").getField("fuel").getField("consumed").getField("volume")
@@ -114,7 +157,7 @@ object JourneysHelper {
     df.withColumn("distance"
       , when(canbusDistanceCol.isNotNull
         , canbusDistanceColValue)
-        .otherwise( 0)
+        .otherwise(0)
     ).withColumn("consumption"
       , when(canbusConsumptionCol.isNotNull
         , canbusConsumptionValue)
@@ -129,7 +172,7 @@ object JourneysHelper {
    * */
   def aggregateStateChangeValues()(df: DataFrame): DataFrame = {
     df.select(
-       col("state_changed_group")
+      col("state_changed_group")
       , col("device_id")
       , col("start_timestamp")
       , col("start_location_address")
@@ -142,7 +185,7 @@ object JourneysHelper {
       , col("distance")
       , col("consumption")
     ).groupBy(
-       col("state_changed_group")
+      col("state_changed_group")
       , col("device_id")
       , col("start_timestamp")
       , col("start_location_address")
@@ -159,7 +202,7 @@ object JourneysHelper {
       , col("*")
       , lit("").as("label")
     )
-    .drop("state_changed_group")
+      .drop("state_changed_group")
 
   }
 
