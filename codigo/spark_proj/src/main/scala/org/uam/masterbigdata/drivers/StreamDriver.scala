@@ -13,18 +13,20 @@ object StreamDriver extends Schemas with DatabaseWriter {
 
   val spark: SparkSession = SparkSession
     .builder()
-    //quitar al hacer submit
-    .master("local[*]")
+    //quitar al hacer submit al cluster
+    //.master("local[*]")
     .appName("Streaming")
     .getOrCreate()
 
   private def createStreamEvents(): Unit = {
+    //si queremos usar el modo depuración usamos 'readFromSocket' en lugar de 'loadKafkaStream'
     val streamDF: DataFrame = loadKafkaStream()
 
     val eventsDF = streamDF.select(from_json(col("value"), telemetry_schema).as("json"))
       .selectExpr("json.*")
       .transform(EventsHelper.createFuelStealingEvent())
 
+    //si queremos usar el modo depuración usamos 'writeEventStreamIntoConsole' en lugar de 'writeEventStreamIntoPostgres'
     val query: StreamingQuery = writeEventStreamIntoPostgres(eventsDF)
     query.awaitTermination()
 
@@ -35,13 +37,14 @@ object StreamDriver extends Schemas with DatabaseWriter {
     .format("kafka")
     .options(
       Map(
-        "kafka.bootstrap.servers" -> "localhost:9092"
+        //Para pruebas eb local usar localhost en lugar de kafka como direccion del bootstrap server. El nombre corresponde al servicio de docker-compose
+        "kafka.bootstrap.servers" -> "kafka:9092"
         , "subscribe" -> "telemetry"
       )
     ).load()
     .select(col("value").cast(StringType).as("value"))
 
-  /** Usar para probar stream mediante socket, por ejemplo con netcat (nc -lk 12345) */
+  /**Con fines de depuración. Usar para probar stream mediante socket, por ejemplo con netcat (nc -lk 12345) */
   private def readFromSocket(): DataFrame = spark.readStream
     .format("socket")
     .options(
@@ -51,7 +54,7 @@ object StreamDriver extends Schemas with DatabaseWriter {
       )
     )
     .load()
-
+/**Con fines de depuración. Leer de consola los resultados del stream*/
   private def writeEventStreamIntoConsole(eventDF:DataFrame) = {
       eventDF
       .writeStream

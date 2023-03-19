@@ -20,7 +20,10 @@ object Dependencies {
     val scalaTestVersion = "3.2.15"
     val encoder = "7.2"
     val scalaTest = "3.2.15"
+    //local
     val sparkVersion = "3.2.3"
+    //contenedor de spark
+    //val sparkVersion = "3.1.2"
     val sparkFastTests = "1.3.0"
     val sparkDaria = "1.2.3"
     val tapir = "0.12.21"
