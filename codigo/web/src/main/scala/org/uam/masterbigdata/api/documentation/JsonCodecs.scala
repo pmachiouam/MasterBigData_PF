@@ -36,7 +36,9 @@ trait JsonCodecs {
     end_location_latitude <- c.get[String]("end_location_latitude")
     end_location_longitude <- c.get[String]("end_location_longitude")
     distance <- c.get[String]("distance")
-  } yield JourneyView(id, device_id, start_timestamp, start_location_address, start_location_latitude, start_location_longitude, end_timestamp, end_location_address, end_location_latitude, end_location_longitude, distance)
+    consumption <- c.get[String]("consumption")
+    label <- c.get[String]("label")
+  } yield JourneyView(id, device_id, start_timestamp, start_location_address, start_location_latitude, start_location_longitude, end_timestamp, end_location_address, end_location_latitude, end_location_longitude, distance, consumption, label)
 
   private[api] implicit lazy val encodeJourneysView: Encoder[JourneyView] = (a: JourneyView) => {
     Json.obj(

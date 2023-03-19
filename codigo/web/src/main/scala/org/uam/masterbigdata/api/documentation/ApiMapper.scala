@@ -15,7 +15,7 @@ trait ApiMapper {
     request => JourneysByDeviceIdRequest(request)
 
   //Events
-  private[api] lazy val mapToDeviceEventRequest: ((Long, Long)) => EventByDeviceIdAndEventIdRequest =
+  private[api] lazy val mapToDeviceEventRequest: ((Long, String)) => EventByDeviceIdAndEventIdRequest =
     request => EventByDeviceIdAndEventIdRequest(request._1, request._2)
 
   private[api] lazy val mapToDeviceEventsRequest: Long => EventsByDeviceIdRequest =

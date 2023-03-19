@@ -7,9 +7,9 @@ import sttp.tapir.{Endpoint, EndpointInput, _}
 
 trait EventsEndpoint extends JsonCodecs  with ApiErrorMapping {
 
-  private[api] lazy val eventIdPath = path[Long]("eventId")
-  private lazy val eventByIdResource: EndpointInput[(Long, Long)] = eventsResource / eventIdPath
-  lazy val getEventByIdEndpoint: Endpoint[(Long, Long), DomainError, EventView, Nothing] =
+  private[api] lazy val eventIdPath = path[String]("eventId")
+  private lazy val eventByIdResource: EndpointInput[(Long, String)] = eventsResource / eventIdPath
+  lazy val getEventByIdEndpoint: Endpoint[(Long, String), DomainError, EventView, Nothing] =
     baseEndpoint
       .get
       .name("GetEventById")

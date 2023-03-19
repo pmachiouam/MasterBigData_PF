@@ -13,17 +13,18 @@ object Entities {
                       , end_location_latitude: Float
                       , end_location_longitude: Float
                       , distance: Long
+                      , consumption:Long
                       , label:String
                     )
 
   case class EventDbo(
-                         id: Long
+                         id: String
                          , device_id: Long
                          , created: Long
                          , type_id: Long
-                         , location_address: String
-                         , location_latitude: Float
-                         , location_longitude: Float
+                         , location_address: Option[String]
+                         , location_latitude: Option[Float]
+                         , location_longitude: Option[Float]
                          , value: String
                        )
 

@@ -15,7 +15,7 @@ trait ModelService[F[_]] {
 
   //Events
   def findAllEvents(deviceId: Long): Future[Seq[Event]]
-  def findEventById(deviceId: Long, id: Long): Future[Event]
+  def findEventById(deviceId: Long, id: String): Future[Event]
 
   //Frame
   def findAllFrames(deviceId: Long): Future[Seq[Frame]]

@@ -28,6 +28,8 @@ trait Converters {
       ,model.end_location_latitude
       ,model.end_location_longitude
       ,model.distance
+      ,model.consumption
+      ,model.label
     )
   }
 

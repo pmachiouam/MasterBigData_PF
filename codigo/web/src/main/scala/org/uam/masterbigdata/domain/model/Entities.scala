@@ -13,6 +13,8 @@ object Entities {
                           , end_location_latitude: String
                           , end_location_longitude: String
                           , distance: String
+                          , consumption: String
+                          , label:String
                         )
   case class JourneysByDeviceIdRequest(deviceId:Long)
   case class JourneysByDeviceIdAndLabelRequest(deviceId:Long, label:String)
@@ -32,7 +34,7 @@ object Entities {
 
   case class EventsByDeviceIdRequest(deviceId: Long)
 
-  case class EventByDeviceIdAndEventIdRequest(deviceId: Long, id: Long)
+  case class EventByDeviceIdAndEventIdRequest(deviceId: Long, id: String)
   //Frames
   case class Frame(
                       id: String
