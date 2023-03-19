@@ -11,6 +11,7 @@ lazy val batch = (project in file("batch_layer"))
 
 lazy val web = (project in file("web"))
   .settings(name := "web")
+  .settings(WebAssemblyStrategy.value)
   .settings(libraryDependencies ++= WebDependencies.production)
 
 
