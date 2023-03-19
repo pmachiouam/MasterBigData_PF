@@ -41,11 +41,7 @@ object JourneysHelper {
           , col("label_original")
         )
           .otherwise(lit("unknown")).as("label_original")
-
-
-        //,col("label_original")
       )
-      //.drop("label", "label_ind", "features", "rawPrediction", "probability", "prediction")
       .withColumnRenamed("label_original", "label")
   }
 

@@ -11,11 +11,16 @@ object ToSubmitDriver extends Schemas with DatabaseWriter {
 
   def main(args: Array[String]): Unit = {
 
-    if (args.length != 1) {
-      println("Need 1) json path")
+    if (args.length != 2) {
+      println(
+        """Se necesita
+          | 1) path del archivos JSON
+          | 2) path del modelo de ML para clasificar los trayectos""".stripMargin)
       System.exit(1)
     }
-    println(s"Json path ${args(0)}")
+    println(s"path del archivos JSON ${args(0)}")
+    println(s"path del modelo de clasificación ${args(1)}")
+
     val spark = SparkSession.builder()
       .appName("ParseJourneys")
       .getOrCreate()
@@ -26,7 +31,7 @@ object ToSubmitDriver extends Schemas with DatabaseWriter {
 
     /**Trayectos*/
     //convierte a trayecto
-    val journeysDF:DataFrame = telemetryDF.transform(JourneysHelper.calculateJourneys())
+    val journeysDF:DataFrame = telemetryDF.transform(JourneysHelper.calculateLabeledJourneys(args(1)))
     //Muestra los 3 primeros
     journeysDF.show(3)
 

@@ -1,7 +1,8 @@
 import Dependencies.{Version => CommonVersion}
 import sbt._
 
-object BatchDependencies {
+//Ejecutar spark en local
+object SparkDependencies {
   val production: List[ModuleID] =
     "org.apache.spark" %% "spark-core" % CommonVersion.sparkVersion :: // % "provided" ::
       "org.apache.spark" %% "spark-sql" % CommonVersion.sparkVersion :: //% "provided" ::

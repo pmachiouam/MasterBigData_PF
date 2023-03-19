@@ -1,12 +1,11 @@
-//Modificada para que cuadre con la aplicación web pero es una versión mayor a la que teniamos para la prueba de spark
-//Ver si funciona o hay que modificar
-//con las dependecias del sub projecto de spark podemos hacer lo mismo que con las web
 ThisBuild / scalaVersion := "2.12.12"
 
-lazy val batch = (project in file("batch_layer"))
-  .settings(name := "Batch_Layer")
-  .settings(libraryDependencies ++= BatchDependencies.production)
-  .settings(libraryDependencies ++= BatchDependencies.test)
+lazy val spark_proj = (project in file("spark_proj"))
+  .settings(name := "spark_proj")
+  .settings(SparkAssemblyStrategy.value)
+  //si queremos crear el ensamblado para lanzar spark en un cluster debemos usar SparkDependenciesProvided, para local SparkDependencies
+  .settings(libraryDependencies ++= SparkDependenciesProvided.production)
+  .settings(libraryDependencies ++= SparkDependenciesProvided.test)
 
 
 lazy val web = (project in file("web"))

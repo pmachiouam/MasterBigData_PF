@@ -1689,8 +1689,60 @@ class JourneysHelperSpec extends AnyFunSpec
       //para comparar quitamos los id porque se generan de forma independiente y no van a coincidir
       assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
     }
+
     it("If there are no journeys nothing is done") {
-      ???
+      val sourceDF = jsonToDF(
+        List(
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:54:27Z"
+              , "server": {"timestamp": "2023-02-05T10:54:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps","coordinate":{ "lat":40.605956 ,"lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:55:27Z"
+              , "server": {"timestamp": "2023-02-05T10:55:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605957, "lng":-3.711923 }, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a1", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:56:27Z"
+              , "server": {"timestamp": "2023-02-05T10:56:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605958, "lng" :-3.711922}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a2", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:57:27Z"
+              , "server": {"timestamp": "2023-02-05T10:57:28.808Z"}
+              , "attributes": {"tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC"}
+              , "gnss": {"type": "Gps", "coordinate": {"lat":40.605959, "lng" :-3.711921}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a3", "precision": "Ideal", "satellites": 13}
+              , "ignition": {"status": false}}"""
+          ,
+          """{
+              "id": 1622186900238446592
+              , "version": "1"
+              , "timestamp": "2023-02-05T10:58:27Z"
+              , "server": { "timestamp": "2023-02-05T10:58:28.808Z"}
+              , "attributes": { "tenantId": "763738558589566976", "deviceId": "1328414834680696832", "manufacturer": "Teltonika", "model": "TeltonikaFMB001", "identifier": "352094083025970TSC" }
+              , "gnss": { "type": "Gps", "coordinate": { "lat":40.605956, "lng" :-3.711923}, "altitude": 722.0, "speed": 0, "speedLimit": 50, "course": 212, "address": "Avenida de la Vega, Tres Cantos, Comunidad de Madrid, 28760, Espa�a", "precision": "Ideal", "satellites": 13 }
+              , "ignition": { "status": false } }"""
+        )
+        , telemetry_schema)
+
+      val actualDF = JourneysHelper.calculateLabeledJourneys("../entorno/data/journeys_logreg_cv")(sourceDF)
+
+      assert(actualDF.count() === 0L)
     }
   }
 
