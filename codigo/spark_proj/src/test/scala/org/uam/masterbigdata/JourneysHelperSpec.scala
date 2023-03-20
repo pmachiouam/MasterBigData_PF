@@ -1617,7 +1617,6 @@ class JourneysHelperSpec extends AnyFunSpec
         , telemetry_schema)
 
       val actualDF = JourneysHelper.calculateLabeledJourneys("../entorno/data/journeys_logreg_cv")(sourceDF)
-      actualDF.show
 
       //para comparar quitamos los id porque se generan de forma independiente y no van a coincidir
       assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)
@@ -1684,7 +1683,6 @@ class JourneysHelperSpec extends AnyFunSpec
         , telemetry_schema)
 
       val actualDF = JourneysHelper.calculateLabeledJourneys("../entorno/data/journeys_logreg_cv")(sourceDF)
-      actualDF.show
 
       //para comparar quitamos los id porque se generan de forma independiente y no van a coincidir
       assertSmallDataFrameEquality(actualDF.drop("id"), expectedDF.drop("id"), ignoreNullable = true)

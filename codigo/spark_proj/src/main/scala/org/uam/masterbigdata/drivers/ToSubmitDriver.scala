@@ -32,16 +32,16 @@ object ToSubmitDriver extends Schemas with DatabaseWriter {
     /**Trayectos*/
     //convierte a trayecto
     val journeysDF:DataFrame = telemetryDF.transform(JourneysHelper.calculateLabeledJourneys(args(1)))
-    //Muestra los 3 primeros
-    journeysDF.show(3)
+    //Depuración. Muestra los 3 primeros
+    //journeysDF.show(3)
 
     //Escribe en base de datos
     saveDataFrameInPostgresSQL(journeysDF, "journeys")
 
    /**Eventos*/
     val eventsDF: DataFrame = telemetryDF.transform(EventsHelper.createExcessiveThrottleEvent())
-    //Muestra los 3 primeros
-    eventsDF.show(3)
+    //Depuración. Muestra los 3 primeros
+    //eventsDF.show(3)
     //Escribe en base de datos
     saveDataFrameInPostgresSQL(eventsDF, "events")
 
