@@ -18,10 +18,10 @@ Este repositorio ha sido creado expresamente para el Proyecto de Fin de Master "
 
 Todos los scripts para inicializar el entorno y realizar pruebas se encuentran en la raiz.
 
-- **script_1_inicio_entorno.sh**. Arranca inicializa el docker compose con todo el entorno de pruebas.
-  - El fichero docker-compose.yml se encuentra en la carpeta entorno.
-- **script_2_inicio_web.sh**. Ensamble la web y la levanta.
 - **script_3_assembly_spark.sh**. Borra previos ensamblados del proyecto, lanza los tests y crea finalmente el ensamblado. El ensamblado se copia en la carpeta del entorno para poder ejecutarlo en el entorno de pruebas.
+- **script_2_inicio_entorno.sh**. Arranca inicializa el docker compose con todo el entorno de pruebas.
+  - El fichero docker-compose.yml se encuentra en la carpeta entorno.
+- **script_3_inicio_web.sh**. Ensambla la web y la levanta.
 - **script_4_batch.sh**. Lanza en el entorno de pruebas las tareas de la capa batch.
 - **script_5_stream.sh**. Lanza en el entorno de pruebas las tareas de la capa de tiempo real.
 - **script_6_stream_producer.sh**. Publica en el Kafka del entorno de pruebas para que la capa de tiempo real lo pueda consumir.
@@ -30,14 +30,14 @@ Importante: El docker-compose no se ha parado en ningún momento, es responsabil
 
 # Ejecución
 
-Ejecutar los scripts del 1 al 6
+Ejecutar los scripts del 1 al 6 en orden.
 
 La web se puede consultar en: http://localhost:8080/api/v1.0/docs/index.html?url=/api/v1.0/docs/docs.yaml
 
 Inicialización:
 Podemos usar el sript "script_2_inicio_web.sh" o hacerlo manualmente.
 
-Como vehiculo de referencia usamos 1328414834680696832
+Como vehiculo de referencia usamos 763738942838145024
 
 # Test unitarios
 

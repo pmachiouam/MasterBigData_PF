@@ -52,7 +52,9 @@ trait JsonCodecs {
       ("end_location_address", a.end_location_address.asJson),
       ("end_location_latitude", a.end_location_latitude.asJson),
       ("end_location_longitude", a.end_location_longitude.asJson),
-      ("distance", a.distance.asJson)
+      ("distance", a.distance.asJson),
+      ("consumption", a.consumption.asJson),
+      ("label", a.label.asJson)
     )
   }
 

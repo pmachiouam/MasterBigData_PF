@@ -25,8 +25,8 @@ trait SwaggerApi {
     EventsEndpoint.getEventByIdEndpoint,
     EventsEndpoint.getEventsEndpoint,
     // F R A M E S
-    FramesEndpoint.getFrameByIdEndpoint,
-    FramesEndpoint.getFramesEndpoint
+    //FramesEndpoint.getFrameByIdEndpoint,
+    //FramesEndpoint.getFramesEndpoint
   )
 
   private lazy val docsAsYaml: String =
