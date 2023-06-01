@@ -7,4 +7,4 @@
 
 #Producer por consola
 #sh /opt/kafka_2.13-2.8.1/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic telemetry < /opt/kafka_2.13-2.8.1/data/streams_example.json
-sh /opt/kafka_2.13-2.8.1/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic telemetry < /opt/kafka_2.13-2.8.1/data/datos_3.json
+sh /opt/kafka_2.13-2.8.1/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic telemetry < /opt/kafka_2.13-2.8.1/data/datos.json
