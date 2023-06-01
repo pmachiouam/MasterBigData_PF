@@ -73,8 +73,8 @@ class ClassifierHelperSpec extends AnyFunSpec
       assert(0.001 > stddev_labelTC2_TC1.get(2).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC2_TC1.get(3).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC2_TC1.get(4).asInstanceOf[String].toDouble)
-      //assert( >== 0.001)
-      //Si queremos ver las estadísticas podemos podemos descomentarlo
+
+      //Si queremos ver las estadísticas quitar el comentario de  la siguiente linea
       //labelTC2_TC1_distribution.show()
 
       val labelTC1_TC2_distribution = extendedDataFrame
@@ -87,7 +87,7 @@ class ClassifierHelperSpec extends AnyFunSpec
       assert(0.001 > stddev_labelTC1_TC2.get(2).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC1_TC2.get(3).asInstanceOf[String].toDouble)
       assert(0.001 > stddev_labelTC2_TC1.get(4).asInstanceOf[String].toDouble)
-        //Si queremos ver las estadísticas podemos podemos descomentar
+      //Si queremos ver las estadísticas quitar el comentario de  la siguiente linea
         //labelTC1_TC2_distribution.show()
     }
   }

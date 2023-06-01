@@ -11,10 +11,14 @@ import org.apache.spark.ml.tuning.CrossValidator
 import org.apache.spark.ml.tuning.ParamGridBuilder
 
 object ClassifierHelper extends Schemas{
-  /**Generamos datos a partir de unos trayectos originales con una sensibilidad de unos 111m para la latitud y longitud
+  /**Generamos datos a partir de unos trayectos originales con una sensibilidad de unos 111metros para la latitud y longitud
+   * de inicio y fin.
+   * Se crean valores aleatorios entre 0 y 1 y se multiplican por 0.001 para que al sumarlos o restarlos a la latitud y
+   * longitud originales no superen los 111 metros
+   *
    * http://wiki.gis.com/wiki/index.php/Decimal_degrees */
   def generateData(originalDataFrame:DataFrame): DataFrame = {
-    originalDataFrame.withColumn("new_col", explode(array((1 until 200).map(lit): _*)))
+    originalDataFrame.withColumn("new_col", explode(array((1 until 201).map(lit): _*)))
       .drop("new_col")
       .withColumn("start_location_latitude",
         when(rand() > 0.5, col("start_location_latitude") + lit(rand() * 0.001))
@@ -79,6 +83,7 @@ object ClassifierHelper extends Schemas{
 
     val crossValidator_tr = crossValidator.fit(dataML_split(0))
 
+    //Métricas de cross validation y los parámetros empleados
     //crossValidator_tr.avgMetrics.foreach(println)
     //crossValidator_tr.getEstimatorParamMaps.foreach(println)
 
