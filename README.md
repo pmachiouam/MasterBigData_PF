@@ -31,13 +31,15 @@ Importante: El docker-compose no se ha parado en ningún momento, es responsabil
 # Ejecución
 
 Ejecutar los scripts del 1 al 6 en orden.
+El script 1 es opcional si ya se creo previamente el ensablado del proyecto Spark
+El script 3 es opcional si ya se creo previamente el ensablado del proyecto Web,pero habría que ejecutar manualmente el ensamblado del proyecto (se puede ver en el script como hacerlo).
 
 La web se puede consultar en: http://localhost:8080/api/v1.0/docs/index.html?url=/api/v1.0/docs/docs.yaml
 
 Inicialización:
 Podemos usar el sript "script_2_inicio_web.sh" o hacerlo manualmente.
 
-Como vehiculo de referencia usamos 763738942838145024
+Como vehículo de referencia usamos 763738942838145024
 
 # Test unitarios
 
