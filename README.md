@@ -4,7 +4,7 @@ Este repositorio ha sido creado expresamente para el Proyecto de Fin de Master "
 
 - **Raiz**. Contiene los directorios principale, los scripts para arrancar las pruebas
   y un pequeño script en python usado para limpiar los archivos json usados como fuentes de datos para las pruebas
-- **Carpeta Papeleo**. Contiene documentación usada para crear y documentar el proyecto asi como la memoría del proyecto.
+- **Carpeta Documentación**. Contiene documentación usada para crear y documentar el proyecto asi como la memoría del proyecto.
 - **Carpeta codigo**. Contiene todo el código en Scala de la prueba de concepto. Incluye test unitarios. Esta preparado para Java 11, Scala 2.12 y SBT 1.8 como herramienta de construcción del proyecto
   - **Carpeta codigo/spark_proj**: Contiene el código de Spark, modelo de ML incluido
     - **Carpeta codigo/spark_proj/src/main/org.uam.masterbigdata.driver**. Contiene los drivers para las capas batch y realtime.
